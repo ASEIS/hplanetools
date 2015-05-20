@@ -4,7 +4,7 @@ import numpy as np
 import sys
 import array
 import time
-#import json
+import math
 import matplotlib.pyplot as plt 
 import matplotlib.mlab as ml
 from mpl_toolkits.mplot3d import Axes3D
@@ -21,13 +21,12 @@ try:
 		inFile = sys.argv[1]
 		userSelection = 1
 except IndexError:
-	print "no text file" 
 	userSelection = 2
 
 if userSelection == 1:
 	file = open(inFile)
 	for line in file:
-		params = line.split(',')
+		params = line.split(' ')
 
 	binaryFile = params.pop(0)
 	fp = open(binaryFile, 'r')
@@ -35,9 +34,6 @@ if userSelection == 1:
 
 	deltaT = params.pop(0)
 	deltaT = float(deltaT)
-
-	iTimeReal = params.pop(0)
-	iTimeReal = float(iTimeReal)
 
 	alongStrike = params.pop(0)
 	alongStrike = int(alongStrike)
@@ -51,17 +47,20 @@ if userSelection == 1:
 	stepDownDip = params.pop(0)
 	stepDownDip = int(stepDownDip)
 
+	magSelect = params.pop(0)
+
 if userSelection == 2:
 	fp = file(raw_input("Enter filename: "), 'r')
 
 	deltaT = float(input("Enter a value for deltaT: "))
-	iTimeReal = float(input("Enter a value for iTimeReal: "))
 
 	alongStrike = int(input("Enter an integer value for alongStrike: "))
 	downDip = int(input("Enter an integer value for downDip: "))
 
 	stepAlongStrike = int(input("Enter an integer value for stepAlongStrike: "))
 	stepDownDip = int(input("Enter an integer value for stepDownDip: "))
+
+	magSelect = raw_input("singleComponent, horizontalMagnitude, or totalMagnitude plot? ")
 
 if userSelection == 3:
 	binaryFile = sys.argv[1]
@@ -70,20 +69,21 @@ if userSelection == 3:
 	deltaT = sys.argv[2]
 	deltaT = float(deltaT)
 
-	iTimeReal = sys.argv[3]
-	iTimeReal = float(iTimeReal)
-
-	alongStrike = sys.argv[4]
+	alongStrike = sys.argv[3]
 	alongStrike = int(alongStrike)
 
-	downDip = sys.argv[5]
+	downDip = sys.argv[4]
 	downDip = int(downDip)
 
-	stepAlongStrike = sys.argv[6]
+	stepAlongStrike = sys.argv[5]
 	stepAlongStrike = int(stepAlongStrike)
 
-	stepDownDip = sys.argv[7]
+	stepDownDip = sys.argv[6]
 	stepDownDip = int(stepDownDip)
+
+	magSelect = sys.argv[7]
+
+iTimeReal = 1
 
 y = np.array(range(0, stepAlongStrike*alongStrike, stepAlongStrike))
 x = np.array(range(0, stepDownDip*downDip, stepDownDip))
@@ -102,7 +102,18 @@ for i in range(0, 899):
 	disY1 = np.reshape(Y, (downDip, alongStrike), order='F')
 	disZ1 = np.reshape(Z, (downDip, alongStrike), order='F')
 
-	peakDis = np.maximum(peakDis, np.absolute(disX1.transpose()))
+	horizMag = np.sqrt(np.power(disX1, 2) + np.power(disY1, 2))
+	totalMag = np.sqrt(np.power(disX1, 2) + np.power(disY1, 2)
+		+ np.power(disZ1, 2))
+
+	if magSelect == "singleComponent":
+		peakDis = np.maximum(peakDis, np.absolute(disX1.transpose()))
+	
+	if magSelect == "horizontalMagnitude":
+		peakDis = np.maximum(peakDis, horizMag.transpose())
+
+	if magSelect == "totalMagnitude":
+		peakDis = np.maximum(peakDis, totalMag.transpose())
 
 for a in (ax.w_xaxis, ax.w_yaxis, ax.w_zaxis):
 	for t in a.get_ticklines()+a.get_ticklabels():
