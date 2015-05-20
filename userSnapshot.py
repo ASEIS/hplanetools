@@ -1,27 +1,89 @@
 #!/usr/bin/env python
 
 import numpy as np
+import sys
 import array
 import time
+#import json
 import matplotlib.pyplot as plt 
 import matplotlib.mlab as ml
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
-fp = file(raw_input("Enter filename: "), 'r')
-
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.grid(False)
 
-deltaT = 0.005*10
-iTimeReal = 1
+try: 
+	if ".txt" not in sys.argv[1]:
+		userSelection = 3
+	else:
+		inFile = sys.argv[1]
+		userSelection = 1
+except IndexError:
+	print "no text file" 
+	userSelection = 2
 
-alongStrike = int(input("Enter an integer value for alongStrike: "))
-downDip = int(input("Enter an integer value for downDip: "))
+if userSelection == 1:
+	file = open(inFile)
+	for line in file:
+		params = line.split(',')
 
-stepAlongStrike = int(input("Enter an integer value for stepAlongStrike: "))
-stepDownDip = int(input("Enter an integer value for stepDownDip: "))
+	binaryFile = params.pop(0)
+	fp = open(binaryFile, 'r')
+
+
+	deltaT = params.pop(0)
+	deltaT = float(deltaT)
+
+	iTimeReal = params.pop(0)
+	iTimeReal = float(iTimeReal)
+
+	alongStrike = params.pop(0)
+	alongStrike = int(alongStrike)
+
+	downDip = params.pop(0)
+	downDip = int(downDip)
+
+	stepAlongStrike = params.pop(0)
+	stepAlongStrike = int(stepAlongStrike)
+
+	stepDownDip = params.pop(0)
+	stepDownDip = int(stepDownDip)
+
+if userSelection == 2:
+	fp = file(raw_input("Enter filename: "), 'r')
+
+	deltaT = float(input("Enter a value for deltaT: "))
+	iTimeReal = float(input("Enter a value for iTimeReal: "))
+
+	alongStrike = int(input("Enter an integer value for alongStrike: "))
+	downDip = int(input("Enter an integer value for downDip: "))
+
+	stepAlongStrike = int(input("Enter an integer value for stepAlongStrike: "))
+	stepDownDip = int(input("Enter an integer value for stepDownDip: "))
+
+if userSelection == 3:
+	binaryFile = sys.argv[1]
+	fp = open(binaryFile, 'r')
+
+	deltaT = sys.argv[2]
+	deltaT = float(deltaT)
+
+	iTimeReal = sys.argv[3]
+	iTimeReal = float(iTimeReal)
+
+	alongStrike = sys.argv[4]
+	alongStrike = int(alongStrike)
+
+	downDip = sys.argv[5]
+	downDip = int(downDip)
+
+	stepAlongStrike = sys.argv[6]
+	stepAlongStrike = int(stepAlongStrike)
+
+	stepDownDip = sys.argv[7]
+	stepDownDip = int(stepDownDip)
 
 y = np.array(range(0, stepAlongStrike*alongStrike, stepAlongStrike))
 x = np.array(range(0, stepDownDip*downDip, stepDownDip))
