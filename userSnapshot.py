@@ -11,10 +11,6 @@ import matplotlib.mlab as ml
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-ax.grid(False)
-
 ''' Check how many arguments the user inputs '''
 
 def countArguments():
@@ -40,6 +36,7 @@ def readInput():
 	global stepDownDip
 	global magSelect
 	global iterations
+	global plotType
 
 	if count == 1:
 		while True:
@@ -53,7 +50,7 @@ def readInput():
 				print "File not found!"
 				sys.exit()
 
-		if len(params) != 8:
+		if len(params) != 9:
 			print "Text file has an invalid number of parameters"
 			sys.exit()
 
@@ -64,6 +61,15 @@ def readInput():
 				break
 			except IOError: 
 				print "Binary file not found"
+				sys.exit
+
+		while True:
+			plotType = params.pop(0)
+
+			if plotType == 'displacement' or plotType == 'velocity' or plotType == 'acceleration':
+				break
+			else:
+				print "Invalid input for plotType"
 				sys.exit()
 
 		while True:
@@ -137,6 +143,15 @@ def readInput():
 				break
 			except IOError:
 				print "File not found!"
+
+		while True:
+			plotType = raw_input("Displacement, velocity, or acceleration plot?  ")
+
+			if plotType == 'displacement' or plotType == 'velocity' or plotType == 'acceleration':
+				break
+			else:
+				print "Invalid input for plotType"
+
 		while True:
 			try:
 				deltaT = float(input("Enter a value for deltaT: "))
@@ -198,8 +213,18 @@ def readInput():
 				sys.exit()
 
 		while True:
+			plotType = sys.argv[2]
+
+			if plotType == 'displacement' or plotType == 'velocity' or plotType == 'acceleration':
+				break
+
+			else:
+				print "Invalid input for plotType"
+				sys.exit()
+
+		while True:
 			try:
-				deltaT = sys.argv[2]
+				deltaT = sys.argv[3]
 				deltaT = float(deltaT)
 				break
 			except ValueError:
@@ -208,7 +233,7 @@ def readInput():
 
 		while True:
 			try:
-				simulationTime = sys.argv[3]
+				simulationTime = sys.argv[4]
 				simulationTime = int(simulationTime)
 				break
 			except ValueError:
@@ -217,7 +242,7 @@ def readInput():
 
 		while True:
 			try:
-				alongStrike = sys.argv[4]
+				alongStrike = sys.argv[5]
 				alongStrike = int(alongStrike)
 				break
 			except ValueError:
@@ -226,7 +251,7 @@ def readInput():
 
 		while True:
 			try:
-				downDip = sys.argv[5]
+				downDip = sys.argv[6]
 				downDip = int(downDip)
 				break
 			except ValueError:
@@ -235,7 +260,7 @@ def readInput():
 
 		while True:
 			try:
-				stepAlongStrike = sys.argv[6]
+				stepAlongStrike = sys.argv[7]
 				stepAlongStrike = int(stepAlongStrike)
 				break
 			except ValueError:
@@ -244,7 +269,7 @@ def readInput():
 
 		while True:
 			try:
-				stepDownDip = sys.argv[7]
+				stepDownDip = sys.argv[8]
 				stepDownDip = int(stepDownDip)
 				break
 			except ValueError:
@@ -252,7 +277,7 @@ def readInput():
 				sys.exit()
 
 		while True:
-			magSelect = sys.argv[8]
+			magSelect = sys.argv[9]
 
 			if magSelect == 'x' or magSelect == 'y' or magSelect == 'z' or magSelect == 'xy' or magSelect == 'xz' or magSelect == 'yz' or magSelect == 'xyz':
 				break
@@ -277,6 +302,9 @@ def readFile():
 	global disX1
 	global disY1
 	global disZ1
+	global disX2
+	global disY2
+	global disZ2
 
 	dis = np.fromfile(fp, np.float64, downDip*alongStrike*3)
 
@@ -288,52 +316,191 @@ def readFile():
 	disY1 = np.reshape(Y, (downDip, alongStrike), order='F')
 	disZ1 = np.reshape(Z, (downDip, alongStrike), order='F')
 
+	if plotType == 'acceleration':
+
+		dis = np.fromfile(fp, np.float64, downDip*alongStrike*3)
+
+		X = dis[::3] #take every third element starting at index 0
+		Y = dis[1::3] #...starting at index 1
+		Z = dis[2::3] #...starting at index 2
+
+		disX2 = np.reshape(X, (downDip, alongStrike), order='F')
+		disY2 = np.reshape(Y, (downDip, alongStrike), order='F')
+		disZ2 = np.reshape(Z, (downDip, alongStrike), order='F')
+
 ''' Use the user input to decide which components to plot '''
 
 def components():
-	global peakDis
+	global peak
+	global velX
+	global velY
+	global velZ
+	global accelX
+	global accelY
+	global accelZ
 
-	if magSelect == "x":
-		peakDis = np.maximum(peakDis, np.absolute(disX1.transpose()))
+	if magSelect == "x" and plotType == "displacement":
+		peak = np.maximum(peak, np.absolute(disX1.transpose()))
 
-	if magSelect == "y":
-		peakDis = np.maximum(peakDis, np.absolute(disY1.transpose()))
+	if magSelect == "x"	and plotType == "velocity":
+		peak = np.maximum(np.absolute(velX.transpose()), peak)
 
-	if magSelect == "z":
-		peakDis = np.maximum(peakDis, np.absolute(disZ1.transpose()))
+	if magSelect == "x"	and plotType == "acceleration":
+		peak = np.maximum(np.absolute(accelX.transpose()), peak)
+
+	if magSelect == "y" and plotType == "displacement":
+		peak = np.maximum(peak, np.absolute(disY1.transpose()))
+
+	if magSelect == "y" and plotType == "velocity":
+		peak = np.maximum(np.absolute(velY.transpose()), peak)
+
+	if magSelect == "y" and plotType == "acceleration":
+		peak = np.maximum(np.absolute(accelY.transpose()), peak)
+
+	if magSelect == "z" and plotType == "displacement":
+		peak = np.maximum(peak, np.absolute(disZ1.transpose()))
+
+	if magSelect == "z" and plotType == "velocity":
+		peak = np.maximum(np.absolute(velZ.transpose()), peak)
+
+	if magSelect == "z" and plotType == "acceleration":
+		peak = np.maximum(np.absolute(accelZ.transpose()), peak)
 	
-	if magSelect == "xy":
+	if magSelect == "xy" and plotType == "displacement":
 		horizMag = np.sqrt(np.power(disX1, 2) + np.power(disY1, 2))
-		peakDis = np.maximum(peakDis, horizMag.transpose())
+		peak = np.maximum(peak, horizMag.transpose())
 
-	if magSelect == "yz":
+	if magSelect == "xy" and plotType == "velocity":
+		horizMag = np.sqrt(np.power(velX, 2) + np.power(velY, 2))
+		peak = np.maximum(peak, horizMag.transpose())
+
+	if magSelect == "xy" and plotType == "acceleration":
+		horizMag = np.sqrt(np.power(accelX, 2) + np.power(accelY, 2))
+		peak = np.maximum(peak, horizMag.transpose())
+
+	if magSelect == "yz" and plotType == "displacement":
 		horizMag = np.sqrt(np.power(disY1, 2) + np.power(disZ1, 2))
-		peakDis = np.maximum(peakDis, horizMag.transpose())
+		peak = np.maximum(peak, horizMag.transpose())
 
-	if magSelect == "xz":
+	if magSelect == "yz" and plotType == "velocity":
+		horizMag = np.sqrt(np.power(velY, 2) + np.power(velZ, 2))
+		peak = np.maximum(peak, horizMag.transpose())
+
+	if magSelect == "yz" and plotType == "acceleration":
+		horizMag = np.sqrt(np.power(accelY, 2) + np.power(accelZ, 2))
+		peak = np.maximum(peak, horizMag.transpose())
+
+	if magSelect == "xz" and plotType == "displacement":
 		horizMag = np.sqrt(np.power(disX1, 2) + np.power(disZ1, 2))
-		peakDis = np.maximum(peakDis, horizMag.transpose())
+		peak = np.maximum(peak, horizMag.transpose())
 
-	if magSelect == "xyz":
+	if magSelect == "xz" and plotType == "velocity":
+		horizMag = np.sqrt(np.power(velX, 2) + np.power(velZ, 2))
+		peak = np.maximum(peak, horizMag.transpose())
+
+	if magSelect == "xz" and plotType == "acceleration":
+		horizMag = np.sqrt(np.power(accelX, 2) + np.power(accelZ, 2))
+		peak = np.maximum(peak, horizMag.transpose())
+
+	if magSelect == "xyz" and plotType == "displacement":
 		totalMag = np.sqrt(np.power(disX1, 2) + np.power(disY1, 2)
 		+ np.power(disZ1, 2))
-		peakDis = np.maximum(peakDis, totalMag.transpose())
+		peak = np.maximum(peak, totalMag.transpose())
+
+	if magSelect == "xyz" and plotType == "velocity":
+		totalMag = np.sqrt(np.power(velX, 2) + np.power(velY, 2)
+		+ np.power(velZ, 2))
+		peak = np.maximum(peak, totalMag.transpose())
+
+	if magSelect == "xyz" and plotType == "acceleration":
+		totalMag = np.sqrt(np.power(accelX, 2) + np.power(accelY, 2)
+		+ np.power(accelZ, 2))
+		peak = np.maximum(peak, totalMag.transpose())
+
+''' Set up our arrays and matrices '''
+
+def matrices():
+	global peak
+
+	y = np.array(range(0, stepAlongStrike*alongStrike, stepAlongStrike))
+	x = np.array(range(0, stepDownDip*downDip, stepDownDip))
+	x, y = np.meshgrid(x, y)
+	peak = np.zeros_like(x)
+
+''' For velocity plots '''
+
+def readVelocity():
+	global disX1
+	global disY1
+	global disZ1
+	global peak
+	global velX
+	global velY
+	global velZ
+
+	dis = np.fromfile(fp, np.float64, downDip*alongStrike*3)
+
+	X = dis[::3] #take every third element starting at index 0
+	Y = dis[1::3] #...starting at index 1
+	Z = dis[2::3] #...starting at index 2
+
+	disX2 = np.reshape(X, (downDip, alongStrike), order='F')
+	disY2 = np.reshape(Y, (downDip, alongStrike), order='F')
+	disZ2 = np.reshape(Z, (downDip, alongStrike), order='F')
+
+	velX = (1/deltaT)*(disX2-disX1)
+	velY = (1/deltaT)*(disY2-disY1)
+	velZ = (1/deltaT)*(disZ2-disZ1)
+
+	components()
+	disX1 = disX2
+
+''' For acceleration plots '''
+
+def readAcceleration():
+	global disX1
+	global disY1
+	global disZ1
+	global disX2
+	global disY2
+	global disZ2
+	global accelX
+	global accelY
+	global accelZ
+
+	dis = np.fromfile(fp, np.float64, downDip*alongStrike*3)
+
+	X = dis[::3] #take every third element starting at index 0
+	Y = dis[1::3] #...starting at index 1
+	Z = dis[2::3] #...starting at index 2
+
+	disX3 = np.reshape(X, (downDip, alongStrike), order='F')
+	disY3 = np.reshape(Y, (downDip, alongStrike), order='F')
+	disZ3 = np.reshape(Z, (downDip, alongStrike), order='F')
+
+	accelX = (disX3-(2*disX2)-disX1)/(np.power(deltaT, 2))
+	accelY = (disY3-(2*disY2)-disY1)/(np.power(deltaT, 2))
+	accelZ = (disZ3-(2*disZ2)-disZ1)/(np.power(deltaT, 2))
+
+	components()
 
 ''' Create the plot '''
 
 def plot():
-	for a in (ax.w_xaxis, ax.w_yaxis, ax.w_zaxis):
-		for t in a.get_ticklines()+a.get_ticklabels():
-			t.set_visible(False)
-		a.line.set_visible(False)
-		a.pane.set_visible(False)\
+	fig = plt.imshow(peak)
+	fig.set_cmap('seismic')
+	plt.axis('off')
+	plt.gca().invert_yaxis()
 
-	surf = ax.plot_surface(x, y, peakDis, cmap=cm.seismic, linewidth=0,
-		antialiased=False, vmin=0, vmax=0.04, cstride=1, rstride=1, shade=True)
-	ax.view_init(azim=-90, elev=90)
+	if plotType == 'displacement':
+		plt.savefig("displacement.png")
+	if plotType == 'velocity':
+		plt.savefig("velocity.png")
+	if plotType == 'acceleration':
+		plt.savefig("acceleration.png")
 
 	m = cm.ScalarMappable(cmap=cm.seismic)
-	m.set_array(peakDis)
+	m.set_array(peak)
 	plt.colorbar(m)
 	plt.xlabel('X')
 	plt.ylabel('Y')
@@ -341,16 +508,25 @@ def plot():
 
 countArguments()
 readInput()
-
-y = np.array(range(0, stepAlongStrike*alongStrike, stepAlongStrike))
-x = np.array(range(0, stepDownDip*downDip, stepDownDip))
-x, y = np.meshgrid(x, y)
-peakDis = np.zeros_like(x)
-
-for i in range(0, iterations-1):
-
+if plotType == 'velocity' or plotType == 'acceleration':
 	readFile()
-	components()
+matrices()
+
+if plotType == 'displacement' or plotType == 'velocity':
+	for i in range(0, iterations-1):
+		if plotType == 'velocity' and i == 0:
+			i = i+1
+
+		if plotType == 'displacement':
+			readFile()
+			components()
+
+		if plotType == 'velocity':
+			readVelocity()
+
+if plotType == 'acceleration':
+	for i in range(2, iterations-1):
+		readAcceleration()
 
 plot()
 plt.show()
