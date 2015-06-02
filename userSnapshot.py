@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.mlab as ml
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
+from matplotlib import colors
 
 ''' Check how many arguments the user inputs '''
 
@@ -37,6 +38,11 @@ def readInput():
 	global magSelect
 	global iterations
 	global plotType
+	global colorMap
+	global colorChoice
+	global userColor1
+	global userColor2
+	global userColor3
 
 	if count == 1:
 		while True:
@@ -50,7 +56,7 @@ def readInput():
 				print "File not found!"
 				sys.exit()
 
-		if len(params) != 9:
+		if len(params) != 10 and len(params) != 13:
 			print "Text file has an invalid number of parameters"
 			sys.exit()
 
@@ -135,6 +141,16 @@ def readInput():
 				print "Invalid input for magSelect"
 				sys.exit()
 
+		colorChoice = params.pop(0)
+
+		if colorChoice == 'custom' or colorChoice == 'colors' or colorChoice == 'custom colors':
+			userColor1 = params.pop(0)
+			userColor2 = params.pop(0)
+			userColor3 = params.pop(0)
+
+		else:
+			colorMap = params.pop(0)
+
 
 	if count == 0:
 		while True:
@@ -202,7 +218,23 @@ def readInput():
 			else:
 				print "Invalid input for magSelect"
 
-	if count == 8:
+		while True:
+			colorChoice = raw_input("Use a a color map or custom colors? ")
+
+			if colorChoice == 'color map' or colorChoice == 'custom colors' or colorChoice == 'map' or colorChoice == 'colors' or colorChoice == 'custom':
+				break
+			else:
+				print """ Please enter "map" or "custom" """
+
+		if colorChoice == 'map' or colorChoice == 'color map':
+			colorMap = raw_input("Enter the colormap for the plot: ")
+
+		if colorChoice == 'colors' or colorChoice == 'custom colors' or colorChoice == 'custom':
+			userColor1 = raw_input("Enter the first color: ")
+			userColor2 = raw_input("Enter the second color: ")
+			userColor3 = raw_input("Enter the third color: ")
+
+	if count == 11 or count == 13:
 		while True:
 			try:
 				binaryFile = sys.argv[1]
@@ -284,8 +316,26 @@ def readInput():
 			else:
 				print "Invalid input for magSelect"
 				sys.exit()
+		while True:
+			colorChoice = sys.argv[10]
 
-	if count != 0 and count != 1 and count != 8:
+			if colorChoice == 'map' or colorChoice == 'colormap' or colorChoice == 'colors' or colorChoice == 'custom':
+				break
+			else: 
+				print "Invalid input for colorChoice"
+				sys.exit()
+
+		if colorChoice == 'map' or colorChoice == 'colormap':
+			colorMap = sys.argv[11]
+			print colorMap
+
+		else:
+			userColor1 = sys.argv[11]
+			userColor2 = sys.argv[12]
+			userColor3 = sys.argv[13]
+
+
+	if count != 0 and count != 1 and count != 11 and count != 13:
 		print "Invalid input"
 		sys.exit()
 
@@ -487,10 +537,22 @@ def readAcceleration():
 ''' Create the plot '''
 
 def plot():
-	fig = plt.imshow(peak)
-	fig.set_cmap('seismic')
+	global colorMap
+
+	if colorChoice == 'colors' or colorChoice == 'custom colors' or colorChoice == 'custom':
+		colorMap = colors.ListedColormap([userColor1, userColor2, userColor3])
+
+	fig = plt.imshow(peak, cmap=colorMap)
+
 	plt.axis('off')
 	plt.gca().invert_yaxis()
+
+	m = cm.ScalarMappable(cmap=colorMap)
+	m.set_array(peak)
+	plt.colorbar(m)
+	plt.xlabel('X')
+	plt.ylabel('Y')
+	plt.axis('scaled')
 
 	if plotType == 'displacement':
 		plt.savefig("displacement.png")
@@ -498,13 +560,6 @@ def plot():
 		plt.savefig("velocity.png")
 	if plotType == 'acceleration':
 		plt.savefig("acceleration.png")
-
-	m = cm.ScalarMappable(cmap=cm.seismic)
-	m.set_array(peak)
-	plt.colorbar(m)
-	plt.xlabel('X')
-	plt.ylabel('Y')
-	plt.axis('scaled')
 
 countArguments()
 readInput()
