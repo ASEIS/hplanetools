@@ -37,6 +37,7 @@ def readInput():
 	global stepDownDip
 	global magSelect
 	global iterations
+	global runtime
 	global plotType
 	global colorMap
 	global colorChoice
@@ -56,7 +57,7 @@ def readInput():
 				print "File not found!"
 				sys.exit()
 
-		if len(params) != 10 and len(params) != 13:
+		if len(params) != 11 and len(params) != 13:
 			print "Text file has an invalid number of parameters"
 			sys.exit()
 
@@ -340,6 +341,7 @@ def readInput():
 		sys.exit()
 
 	iterations = int(simulationTime/deltaT)
+	runtime = iterations-1
 
 ''' Read the binary file input by the user, take the X, Y, and Z
 	values and reshape into a matrix '''
@@ -538,6 +540,9 @@ def readAcceleration():
 
 def plot():
 	global colorMap
+	global counting
+
+	counting = counting + 1
 
 	if colorChoice == 'colors' or colorChoice == 'custom colors' or colorChoice == 'custom':
 		colorMap = colors.ListedColormap([userColor1, userColor2, userColor3])
@@ -555,12 +560,15 @@ def plot():
 	plt.axis('scaled')
 
 	if plotType == 'displacement':
-		plt.savefig("displacement.png")
+		plt.savefig("displacement" + str(counting) + ".png")
 	if plotType == 'velocity':
-		plt.savefig("velocity.png")
+		plt.savefig("velocity" + str(counting) + ".png")
 	if plotType == 'acceleration':
-		plt.savefig("acceleration.png")
+		plt.savefig("acceleration" + str(counting) + ".png")
 
+	plt.show()
+
+counting = 0
 countArguments()
 readInput()
 if plotType == 'velocity' or plotType == 'acceleration':
@@ -568,7 +576,7 @@ if plotType == 'velocity' or plotType == 'acceleration':
 matrices()
 
 if plotType == 'displacement' or plotType == 'velocity':
-	for i in range(0, iterations-1):
+	for i in range(0, runtime):
 		if plotType == 'velocity' and i == 0:
 			i = i+1
 
@@ -576,12 +584,46 @@ if plotType == 'displacement' or plotType == 'velocity':
 			readFile()
 			components()
 
+			if i == int(runtime/10) or i == int(runtime/5):
+				plot()
+			if i == int(runtime/3.3333333) or i == int(runtime/2.5):
+				plot()
+			if i == int(runtime/2) or i == int(runtime/1.6666667):
+				plot()
+			if i == int(runtime/1.4285714) or i == int(runtime/1.25):
+				plot()
+			if i == int(runtime/1.11111112):
+				plot()
+
 		if plotType == 'velocity':
 			readVelocity()
 
+			if i == int(runtime/10) or i == int(runtime/5):
+				plot()
+			if i == int(runtime/3.3333333) or i == int(runtime/2.5):
+				plot()
+			if i == int(runtime/2) or i == int(runtime/1.6666667):
+				plot()
+			if i == int(runtime/1.4285714) or i == int(runtime/1.25):
+				plot()
+			if i == int(runtime/1.11111112):
+				plot()
+
 if plotType == 'acceleration':
-	for i in range(2, iterations-1):
+	for i in range(2, runtime):
 		readAcceleration()
+
+		if i == int(runtime/10) or i == int(runtime/5):
+			plot()
+		if i == int(runtime/3.3333333) or i == int(runtime/2.5):
+			plot()
+		if i == int(runtime/2) or i == int(runtime/1.6666667):
+			plot()
+		if i == int(runtime/1.4285714) or i == int(runtime/1.25):
+			plot()
+		if i == int(runtime/1.11111112):
+			plot()
+
 
 plot()
 plt.show()
