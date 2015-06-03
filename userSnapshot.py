@@ -536,6 +536,21 @@ def readAcceleration():
 
 	components()
 
+''' for custom color maps '''
+
+def make_colormap(seq):
+
+    seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
+    cdict = {'red': [], 'green': [], 'blue': []}
+    for i, item in enumerate(seq):
+        if isinstance(item, float):
+            r1, g1, b1 = seq[i - 1]
+            r2, g2, b2 = seq[i + 1]
+            cdict['red'].append([item, r1, r2])
+            cdict['green'].append([item, g1, g2])
+            cdict['blue'].append([item, b1, b2])
+    return colors.LinearSegmentedColormap('CustomMap', cdict)
+
 ''' Create the plot '''
 
 def plot():
@@ -545,7 +560,11 @@ def plot():
 	counting = counting + 1
 
 	if colorChoice == 'colors' or colorChoice == 'custom colors' or colorChoice == 'custom':
-		colorMap = colors.ListedColormap([userColor1, userColor2, userColor3])
+		# colorMap = colors.ListedColormap([userColor1, userColor2, userColor3])
+		c = colors.ColorConverter().to_rgb
+		colorMap = make_colormap(
+    	[c(userColor1), c(userColor2), 0.33, c(userColor2), 
+    	c(userColor3), 0.66, c(userColor3)])
 
 	fig = plt.imshow(peak, cmap=colorMap)
 
@@ -584,44 +603,44 @@ if plotType == 'displacement' or plotType == 'velocity':
 			readFile()
 			components()
 
-			if i == int(runtime/10) or i == int(runtime/5):
+			if i == int(runtime*0.1) or i == int(runtime*0.2):
 				plot()
-			if i == int(runtime/3.3333333) or i == int(runtime/2.5):
+			if i == int(runtime*0.3) or i == int(runtime*0.4):
 				plot()
-			if i == int(runtime/2) or i == int(runtime/1.6666667):
+			if i == int(runtime*0.5) or i == int(runtime*0.6):
 				plot()
-			if i == int(runtime/1.4285714) or i == int(runtime/1.25):
+			if i == int(runtime*0.7) or i == int(runtime*0.8):
 				plot()
-			if i == int(runtime/1.11111112):
+			if i == int(runtime*0.9):
 				plot()
 
 		if plotType == 'velocity':
 			readVelocity()
 
-			if i == int(runtime/10) or i == int(runtime/5):
+			if i == int(runtime*0.1) or i == int(runtime*0.2):
 				plot()
-			if i == int(runtime/3.3333333) or i == int(runtime/2.5):
+			if i == int(runtime*0.3) or i == int(runtime*0.4):
 				plot()
-			if i == int(runtime/2) or i == int(runtime/1.6666667):
+			if i == int(runtime*0.5) or i == int(runtime*0.6):
 				plot()
-			if i == int(runtime/1.4285714) or i == int(runtime/1.25):
+			if i == int(runtime*0.7) or i == int(runtime*0.8):
 				plot()
-			if i == int(runtime/1.11111112):
+			if i == int(runtime*0.9):
 				plot()
 
 if plotType == 'acceleration':
 	for i in range(2, runtime):
 		readAcceleration()
 
-		if i == int(runtime/10) or i == int(runtime/5):
+		if i == int(runtime*0.1) or i == int(runtime*0.2):
 			plot()
-		if i == int(runtime/3.3333333) or i == int(runtime/2.5):
+		if i == int(runtime*0.3) or i == int(runtime*0.4):
 			plot()
-		if i == int(runtime/2) or i == int(runtime/1.6666667):
+		if i == int(runtime*0.5) or i == int(runtime*0.6):
 			plot()
-		if i == int(runtime/1.4285714) or i == int(runtime/1.25):
+		if i == int(runtime*0.7) or i == int(runtime*0.8):
 			plot()
-		if i == int(runtime/1.11111112):
+		if i == int(runtime*0.9):
 			plot()
 
 
