@@ -122,6 +122,7 @@ def readInput():
 	global userColor2
 	global userColor3
 	global scale
+	global snapshots
 
 	if count == 1:
 		while True:
@@ -135,7 +136,7 @@ def readInput():
 				print "File not found!"
 				sys.exit()
 
-		if len(params) != 12 and len(params) != 14:
+		if len(params) != 13 and len(params) != 15:
 			print "Text file has an invalid number of parameters"
 			sys.exit()
 
@@ -178,6 +179,10 @@ def readInput():
 		scale = testInput_text(params, checkList, 
 			"Invalid input for plotType", 's')
 
+		checkList = (["final", "ten", "10"])
+		snapshots = testInput_text(params, checkList,
+			"Invalid input for snapshots", 's')
+
 		colorChoice = params.pop(0)
 
 		if colorChoice == 'custom' or colorChoice == 'colors' or colorChoice == 'custom colors':
@@ -197,8 +202,8 @@ def readInput():
 			except IOError:
 				print "File not found!"
 
-		checkList = (["displacement", "velocity", "acceleration"])
-		plotType = ("displacement, velocity, or acceleration plot?", checkList,
+	 	checkList = (["displacement", "velocity", "acceleration"])
+		plotType = testInput("displacement, velocity, or acceleration plot? ", checkList,
 			"Invalid input for plotType", 's')
 
 		deltaT = testInput("Enter a value for deltaT: ", NameError, 
@@ -227,6 +232,10 @@ def readInput():
 		scale = testInput("Plot using linear scale or logarithmic scale? ", 
 			checkList, """ Please enter "linear" or logarithmic """, 's')
 
+		checkList = (["final", "ten", "10"])
+		snapshots = testInput("Display only the final snapshot or ten snapshots? ",
+			checkList, """Please enter "final" or "ten" """, 's')
+
 		checkList = (["color map", "custom colors", "map", "colors", "custom"])
 		colorChoice = testInput("Use a color map or custom colors? ", checkList, 
 			""" Please enter "map" or "custom" """, 's')
@@ -239,7 +248,7 @@ def readInput():
 			userColor2 = raw_input("Enter the second color: ")
 			userColor3 = raw_input("Enter the third color: ")
 
-	if count == 11 or count == 12:
+	if count == 12 or count == 13:
 		while True:
 			try:
 				binaryFile = sys.argv[1]
@@ -272,28 +281,32 @@ def readInput():
 			"stepDownDip is of incorrect type", 'i', 8)
 
 		checkList = (["x", "y", "z", "xy", "xz", "yz", "xyz"])
-		magSelect = testInput(checkList, 
+		magSelect = testInput_terminal(checkList, 
 			"Invalid input for magSelect", 's', 9)
 
 		checkList = (["linear", "log", "logarithmic"])
-		scale = testInput(checkList, 
+		scale = testInput_terminal(checkList, 
 			""" Please enter "linear" or logarithmic """, 's', 10)
 
+		checkList = (["final", "ten", "10"])
+		snapshots = testInput_terminal(checkList, 
+			""" Please enter "final" or "ten" """, 's', 11)
+
 		checkList = (["color map", "custom colors", "map", "colors", "custom"])
-		colorChoice = testInput(checkList, 
-			""" Please enter "map" or "custom" """, 's', 11)
+		colorChoice = testInput_terminal(checkList, 
+			""" Please enter "map" or "custom" """, 's', 12)
 
 		if colorChoice == 'map' or colorChoice == 'colormap':
-			colorMap = sys.argv[12]
+			colorMap = sys.argv[13]
 			print colorMap
 
 		else:
-			userColor1 = sys.argv[12]
-			userColor2 = sys.argv[13]
-			userColor3 = sys.argv[14]
+			userColor1 = sys.argv[13]
+			userColor2 = sys.argv[14]
+			userColor3 = sys.argv[15]
 
 
-	if count != 0 and count != 1 and count != 12 and count != 14:
+	if count != 0 and count != 1 and count != 13 and count != 15:
 		print "Invalid input"
 		sys.exit()
 
@@ -559,45 +572,48 @@ if plotType == 'displacement' or plotType == 'velocity':
 			readFile()
 			components()
 
-			# if i == int(runtime*0.1) or i == int(runtime*0.2):
-			# 	plot()
-			# if i == int(runtime*0.3) or i == int(runtime*0.4):
-			# 	plot()
-			# if i == int(runtime*0.5) or i == int(runtime*0.6):
-			# 	plot()
-			# if i == int(runtime*0.7) or i == int(runtime*0.8):
-			# 	plot()
-			# if i == int(runtime*0.9):
-			# 	plot()
+			if snapshots == "ten" or snapshots == "10":
+				if i == int(runtime*0.1) or i == int(runtime*0.2):
+					plot()
+				if i == int(runtime*0.3) or i == int(runtime*0.4):
+					plot()
+				if i == int(runtime*0.5) or i == int(runtime*0.6):
+					plot()
+				if i == int(runtime*0.7) or i == int(runtime*0.8):
+					plot()
+				if i == int(runtime*0.9):
+					plot()
 
 		if plotType == 'velocity':
 			readVelocity()
 
-			# if i == int(runtime*0.1) or i == int(runtime*0.2):
-			# 	plot()
-			# if i == int(runtime*0.3) or i == int(runtime*0.4):
-			# 	plot()
-			# if i == int(runtime*0.5) or i == int(runtime*0.6):
-			# 	plot()
-			# if i == int(runtime*0.7) or i == int(runtime*0.8):
-			# 	plot()
-			# if i == int(runtime*0.9):
-			# 	plot()
+			if snapshots == "ten" or snapshots == "10":
+				if i == int(runtime*0.1) or i == int(runtime*0.2):
+					plot()
+				if i == int(runtime*0.3) or i == int(runtime*0.4):
+					plot()
+				if i == int(runtime*0.5) or i == int(runtime*0.6):
+					plot()
+				if i == int(runtime*0.7) or i == int(runtime*0.8):
+					plot()
+				if i == int(runtime*0.9):
+					plot()
 
 if plotType == 'acceleration':
 	for i in range(2, runtime):
 		readAcceleration()
 
-		# if i == int(runtime*0.1) or i == int(runtime*0.2):
-		# 	plot()
-		# if i == int(runtime*0.3) or i == int(runtime*0.4):
-		# 	plot()
-		# if i == int(runtime*0.5) or i == int(runtime*0.6):
-		# 	plot()
-		# if i == int(runtime*0.7) or i == int(runtime*0.8):
-		# 	plot()
-		# if i == int(runtime*0.9):
-		# 	plot()
+		if snapshots == "ten" or snapshots == "10":
+			if i == int(runtime*0.1) or i == int(runtime*0.2):
+				plot()
+			if i == int(runtime*0.3) or i == int(runtime*0.4):
+				plot()
+			if i == int(runtime*0.5) or i == int(runtime*0.6):
+				plot()
+			if i == int(runtime*0.7) or i == int(runtime*0.8):
+				plot()
+			if i == int(runtime*0.9):
+				plot()
 
 
 plot()
