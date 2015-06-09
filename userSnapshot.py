@@ -23,6 +23,83 @@ def countArguments():
 		except IndexError:
 			break
 
+''' Test the input when parameters are input by the user individually '''
+
+def testInput(request_text, error, error_message, identifier):
+
+	while True:
+		try:
+			if identifier == 'i':
+				output = int(input(request_text))
+				break
+			if identifier == 's':
+				output = raw_input(request_text)
+				for i in range(len(error)):
+					if output == error[i]:
+						return output
+				print error_message
+
+			if identifier == 'f':
+				output = float(input(request_text))
+				break
+
+		except error:
+			print error_message
+
+	return output
+
+''' Test the input when parameters are read from a text file '''
+
+def testInput_text(textFile, error, error_message, identifier):
+
+	try:
+		output = textFile.pop(0)
+
+		if identifier == 'i':
+			output = int(output)
+			return output
+
+		if identifier == 'f':
+			output = float(output)
+			return output
+
+		if identifier == 's':
+			for i in range(len(error)):
+				if output == error[i]:
+					return output
+			print error_message
+			sys.exit()
+
+	except error:
+		print error_message
+		sys.exit()
+
+''' Test the input when parameters are read from the terminal '''
+
+def testInput_terminal(error, error_message, identifier, inputCount):
+
+	try:
+		output = sys.argv[inputCount]
+
+		if identifier == 'i':
+			output = int(output)
+
+		if identifier == 'f':
+			output = float(output)
+
+		if identifier == 's':
+			for i in range(len(error)):
+				if output == error[i]:
+					return output
+			print error_message
+			sys.exit()
+
+		return output
+
+	except error:
+		print error_message
+		sys.exit()
+
 ''' Decide how to collect the data through user input, a text file
 	for if it's already been input through the terminal. This is
 	decided by how many arguments the user input '''
@@ -44,6 +121,7 @@ def readInput():
 	global userColor1
 	global userColor2
 	global userColor3
+	global scale
 
 	if count == 1:
 		while True:
@@ -57,7 +135,7 @@ def readInput():
 				print "File not found!"
 				sys.exit()
 
-		if len(params) != 11 and len(params) != 13:
+		if len(params) != 12 and len(params) != 14:
 			print "Text file has an invalid number of parameters"
 			sys.exit()
 
@@ -70,77 +148,35 @@ def readInput():
 				print "Binary file not found"
 				sys.exit
 
-		while True:
-			plotType = params.pop(0)
+		checkList = (["displacement", "velocity", "acceleration"])
+		plotType = testInput_text(params, checkList, 
+			"Invalid input for plotType", 's')
 
-			if plotType == 'displacement' or plotType == 'velocity' or plotType == 'acceleration':
-				break
-			else:
-				print "Invalid input for plotType"
-				sys.exit()
+		deltaT = testInput_text(params, ValueError, 
+			"Parameter deltaT is of incorrect type", 'f')
 
-		while True:
-			try:
-				deltaT = params.pop(0)
-				deltaT = float(deltaT)
-				break
-			except ValueError:
-				print "Parameter is of incorrect type"
-				sys.exit()
+		simulationTime = testInput_text(params, ValueError,
+			"Parameter simulationTime is of incorrect type", 'i')
 
-		while True:
-			try:
-				simulationTime = params.pop(0)
-				simulationTime = int(simulationTime)
-				break
-			except ValueError:
-				print "Parameter is of incorrect type"
-				sys.exit()
+		alongStrike = testInput_text(params, ValueError, 
+			"Parameter alongStrike is of incorrect type", 'i')
 
-		while True:
-			try:
-				alongStrike = params.pop(0)
-				alongStrike = int(alongStrike)
-				break
-			except ValueError:
-				print "Parameter is of incorrect type"
-				sys.exit()
+		downDip = testInput_text(params, ValueError, 
+			"Parameter downDip is of incorrect type", 'i')
 
-		while True:
-			try:
-				downDip = params.pop(0)
-				downDip = int(downDip)
-				break
-			except ValueError:
-				print "Parameter is of incorrect type"
-				sys.exit()
+		stepAlongStrike = testInput_text(params, ValueError, 
+			"Parameter stepAlongStrike is of incorrect type", 'i')
 
-		while True:
-			try:
-				stepAlongStrike = params.pop(0)
-				stepAlongStrike = int(stepAlongStrike)
-				break
-			except ValueError:
-				print "Parameter is of incorrect type"
-				sys.exit()
+		stepDownDip = testInput_text(params, ValueError, 
+			"Parameter stepDownDip is of incorrect type", 'i')
 
-		while True:
-			try:
-				stepDownDip = params.pop(0)
-				stepDownDip = int(stepDownDip)
-				break
-			except ValueError:
-				print "Parameter is of incorrect type"
-				sys.exit()
+		checkList = (["x", "y", "z", "xy", "xz", "yz", "xyz"])
+		magSelect = testInput_text(params, checkList, 
+			"Invalid input for magSelect", 's')
 
-		while True:
-			magSelect = params.pop(0)
-
-			if magSelect == 'x' or magSelect == 'y' or magSelect == 'z' or magSelect == 'xy' or magSelect == 'xz' or magSelect == 'yz' or magSelect == 'xyz':
-				break
-			else:
-				print "Invalid input for magSelect"
-				sys.exit()
+		checkList = (["linear", "logarithmic", "log"])
+		scale = testInput_text(params, checkList, 
+			"Invalid input for plotType", 's')
 
 		colorChoice = params.pop(0)
 
@@ -152,8 +188,8 @@ def readInput():
 		else:
 			colorMap = params.pop(0)
 
-
 	if count == 0:
+
 		while True:
 			try:
 				fp = open(raw_input("Enter filename: "), 'r')
@@ -161,71 +197,39 @@ def readInput():
 			except IOError:
 				print "File not found!"
 
-		while True:
-			plotType = raw_input("Displacement, velocity, or acceleration plot?  ")
+		checkList = (["displacement", "velocity", "acceleration"])
+		plotType = ("displacement, velocity, or acceleration plot?", checkList,
+			"Invalid input for plotType", 's')
 
-			if plotType == 'displacement' or plotType == 'velocity' or plotType == 'acceleration':
-				break
-			else:
-				print "Invalid input for plotType"
+		deltaT = testInput("Enter a value for deltaT: ", NameError, 
+			"Parameter is of incorrect type", 'f')
 
-		while True:
-			try:
-				deltaT = float(input("Enter a value for deltaT: "))
-				break
-			except NameError:
-				print "Parameter is of incorrect type"
+		simulationTime = testInput("Enter a value for the simulationTime: ", 
+			NameError, "Parameter is of incorrect type", 'i')
 
-		while True:
-			try:
-				simulationTime = int(input("Enter a value for the simulationTime: "))
-				break
-			except NameError:
-				print "Parameter is of incorrect type"
+		alongStrike = testInput("Enter an integer value for alongStrike: ",
+			NameError, "Parameter is of incorrect type", 'i')
 
-		while True:
-			try:
-				alongStrike = int(input("Enter an integer value for alongStrike: "))
-				break
-			except NameError:
-				print "Parameter is of incorrect type"
+		downDip = testInput("Enter an integer value for downDip: ",
+			NameError, "Parameter is of incorrect type", 'i')
 
-		while True:
-			try:
-				downDip = int(input("Enter an integer value for downDip: "))
-				break
-			except NameError:
-				print "Parameter is of incorrect type"
+		stepAlongStrike = testInput("Enter an integer value for stepAlongStrike: ",
+			NameError, "Parameter is of incorrect type", 'i')
 
-		while True:
-			try:
-				stepAlongStrike = int(input("Enter an integer value for stepAlongStrike: "))
-				break
-			except NameError:
-				print "Parameter is of incorrect type"
+		stepDownDip = testInput("Enter an integer value for stepDownDip: ",
+			NameError, "Parameter is of incorrect type", 'i')
 
-		while True:
-			try:
-				stepDownDip = int(input("Enter an integer value for stepDownDip: "))
-				break
-			except NameError:
-				print "Parameter is of incorrect type"
+		checkList = (["x", "y", "z", "xy", "xz", "yz", "xyz"])
+		magSelect = testInput("Enter the axis to plot: ", checkList, 
+			"Invalid input for magSelect", 's')
 
-		while True:
-			magSelect = raw_input("Enter the type of plot: ")
+		checkList = (["linear", "log", "logarithmic"])
+		scale = testInput("Plot using linear scale or logarithmic scale? ", 
+			checkList, """ Please enter "linear" or logarithmic """, 's')
 
-			if magSelect == 'x' or magSelect == 'y' or magSelect == 'z' or magSelect == 'xy' or magSelect == 'xz' or magSelect == 'yz' or magSelect == 'xyz':
-				break
-			else:
-				print "Invalid input for magSelect"
-
-		while True:
-			colorChoice = raw_input("Use a a color map or custom colors? ")
-
-			if colorChoice == 'color map' or colorChoice == 'custom colors' or colorChoice == 'map' or colorChoice == 'colors' or colorChoice == 'custom':
-				break
-			else:
-				print """ Please enter "map" or "custom" """
+		checkList = (["color map", "custom colors", "map", "colors", "custom"])
+		colorChoice = testInput("Use a color map or custom colors? ", checkList, 
+			""" Please enter "map" or "custom" """, 's')
 
 		if colorChoice == 'map' or colorChoice == 'color map':
 			colorMap = raw_input("Enter the colormap for the plot: ")
@@ -235,7 +239,7 @@ def readInput():
 			userColor2 = raw_input("Enter the second color: ")
 			userColor3 = raw_input("Enter the third color: ")
 
-	if count == 11 or count == 13:
+	if count == 11 or count == 12:
 		while True:
 			try:
 				binaryFile = sys.argv[1]
@@ -245,98 +249,51 @@ def readInput():
 				print "File not found!"
 				sys.exit()
 
-		while True:
-			plotType = sys.argv[2]
+		checkList = (["displacement", "velocity", "acceleration"])
+		plotType = testInput_terminal(checkList, 
+			"Invalid input for plotType", 's', 2)
 
-			if plotType == 'displacement' or plotType == 'velocity' or plotType == 'acceleration':
-				break
+		deltaT = testInput_terminal(ValueError, 
+			"deltaT is of incorrect type", 'f', 3)
 
-			else:
-				print "Invalid input for plotType"
-				sys.exit()
+		simulationTime = testInput_terminal(ValueError,
+			"simulationTime is of incorrect type", 'i', 4)
 
-		while True:
-			try:
-				deltaT = sys.argv[3]
-				deltaT = float(deltaT)
-				break
-			except ValueError:
-				print "Parameter is of incorrect type"
-				sys.exit()
+		alongStrike = testInput_terminal(ValueError, 
+			"alongStrike is of incorrect type", 'i', 5)
 
-		while True:
-			try:
-				simulationTime = sys.argv[4]
-				simulationTime = int(simulationTime)
-				break
-			except ValueError:
-				print "Parameter is of incorrect type"
-				sys.exit()
+		downDip = testInput_terminal(ValueError,
+			"downDip is of incorrect type", 'i', 6)
 
-		while True:
-			try:
-				alongStrike = sys.argv[5]
-				alongStrike = int(alongStrike)
-				break
-			except ValueError:
-				print "Parameter is of incorrect type"
-				sys.exit()
+		stepAlongStrike = testInput_terminal(ValueError,
+			"stepAlongStrike is of incorrect type", 'i', 7)
 
-		while True:
-			try:
-				downDip = sys.argv[6]
-				downDip = int(downDip)
-				break
-			except ValueError:
-				print "Parameter is of incorrect type"
-				sys.exit()
+		stepDownDip = testInput_terminal(ValueError,
+			"stepDownDip is of incorrect type", 'i', 8)
 
-		while True:
-			try:
-				stepAlongStrike = sys.argv[7]
-				stepAlongStrike = int(stepAlongStrike)
-				break
-			except ValueError:
-				print "Parameter is of incorrect type"
-				sys.exit()
+		checkList = (["x", "y", "z", "xy", "xz", "yz", "xyz"])
+		magSelect = testInput(checkList, 
+			"Invalid input for magSelect", 's', 9)
 
-		while True:
-			try:
-				stepDownDip = sys.argv[8]
-				stepDownDip = int(stepDownDip)
-				break
-			except ValueError:
-				print "Parameter is of incorrect type"
-				sys.exit()
+		checkList = (["linear", "log", "logarithmic"])
+		scale = testInput(checkList, 
+			""" Please enter "linear" or logarithmic """, 's', 10)
 
-		while True:
-			magSelect = sys.argv[9]
-
-			if magSelect == 'x' or magSelect == 'y' or magSelect == 'z' or magSelect == 'xy' or magSelect == 'xz' or magSelect == 'yz' or magSelect == 'xyz':
-				break
-			else:
-				print "Invalid input for magSelect"
-				sys.exit()
-		while True:
-			colorChoice = sys.argv[10]
-
-			if colorChoice == 'map' or colorChoice == 'colormap' or colorChoice == 'colors' or colorChoice == 'custom':
-				break
-			else: 
-				print "Invalid input for colorChoice"
-				sys.exit()
+		checkList = (["color map", "custom colors", "map", "colors", "custom"])
+		colorChoice = testInput(checkList, 
+			""" Please enter "map" or "custom" """, 's', 11)
 
 		if colorChoice == 'map' or colorChoice == 'colormap':
-			colorMap = sys.argv[11]
+			colorMap = sys.argv[12]
 			print colorMap
 
 		else:
-			userColor1 = sys.argv[11]
-			userColor2 = sys.argv[12]
-			userColor3 = sys.argv[13]
+			userColor1 = sys.argv[12]
+			userColor2 = sys.argv[13]
+			userColor3 = sys.argv[14]
 
 
-	if count != 0 and count != 1 and count != 11 and count != 13:
+	if count != 0 and count != 1 and count != 12 and count != 14:
 		print "Invalid input"
 		sys.exit()
 
@@ -560,7 +517,6 @@ def plot():
 	counting = counting + 1
 
 	if colorChoice == 'colors' or colorChoice == 'custom colors' or colorChoice == 'custom':
-		# colorMap = colors.ListedColormap([userColor1, userColor2, userColor3])
 		c = colors.ColorConverter().to_rgb
 		colorMap = make_colormap(
     	[c(userColor1), c(userColor2), 0.33, c(userColor2), 
@@ -603,45 +559,45 @@ if plotType == 'displacement' or plotType == 'velocity':
 			readFile()
 			components()
 
-			if i == int(runtime*0.1) or i == int(runtime*0.2):
-				plot()
-			if i == int(runtime*0.3) or i == int(runtime*0.4):
-				plot()
-			if i == int(runtime*0.5) or i == int(runtime*0.6):
-				plot()
-			if i == int(runtime*0.7) or i == int(runtime*0.8):
-				plot()
-			if i == int(runtime*0.9):
-				plot()
+			# if i == int(runtime*0.1) or i == int(runtime*0.2):
+			# 	plot()
+			# if i == int(runtime*0.3) or i == int(runtime*0.4):
+			# 	plot()
+			# if i == int(runtime*0.5) or i == int(runtime*0.6):
+			# 	plot()
+			# if i == int(runtime*0.7) or i == int(runtime*0.8):
+			# 	plot()
+			# if i == int(runtime*0.9):
+			# 	plot()
 
 		if plotType == 'velocity':
 			readVelocity()
 
-			if i == int(runtime*0.1) or i == int(runtime*0.2):
-				plot()
-			if i == int(runtime*0.3) or i == int(runtime*0.4):
-				plot()
-			if i == int(runtime*0.5) or i == int(runtime*0.6):
-				plot()
-			if i == int(runtime*0.7) or i == int(runtime*0.8):
-				plot()
-			if i == int(runtime*0.9):
-				plot()
+			# if i == int(runtime*0.1) or i == int(runtime*0.2):
+			# 	plot()
+			# if i == int(runtime*0.3) or i == int(runtime*0.4):
+			# 	plot()
+			# if i == int(runtime*0.5) or i == int(runtime*0.6):
+			# 	plot()
+			# if i == int(runtime*0.7) or i == int(runtime*0.8):
+			# 	plot()
+			# if i == int(runtime*0.9):
+			# 	plot()
 
 if plotType == 'acceleration':
 	for i in range(2, runtime):
 		readAcceleration()
 
-		if i == int(runtime*0.1) or i == int(runtime*0.2):
-			plot()
-		if i == int(runtime*0.3) or i == int(runtime*0.4):
-			plot()
-		if i == int(runtime*0.5) or i == int(runtime*0.6):
-			plot()
-		if i == int(runtime*0.7) or i == int(runtime*0.8):
-			plot()
-		if i == int(runtime*0.9):
-			plot()
+		# if i == int(runtime*0.1) or i == int(runtime*0.2):
+		# 	plot()
+		# if i == int(runtime*0.3) or i == int(runtime*0.4):
+		# 	plot()
+		# if i == int(runtime*0.5) or i == int(runtime*0.6):
+		# 	plot()
+		# if i == int(runtime*0.7) or i == int(runtime*0.8):
+		# 	plot()
+		# if i == int(runtime*0.9):
+		# 	plot()
 
 
 plot()
