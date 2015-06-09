@@ -313,43 +313,6 @@ def readInput():
 	iterations = int(simulationTime/deltaT)
 	runtime = iterations-1
 
-''' Read the binary file input by the user, take the X, Y, and Z
-	values and reshape into a matrix '''
-
-def readFile():
-	global dis
-	global X
-	global Y
-	global Z
-	global disX1
-	global disY1
-	global disZ1
-	global disX2
-	global disY2
-	global disZ2
-
-	dis = np.fromfile(fp, np.float64, downDip*alongStrike*3)
-
-	X = dis[::3] #take every third element starting at index 0
-	Y = dis[1::3] #...starting at index 1
-	Z = dis[2::3] #...starting at index 2
-
-	disX1 = np.reshape(X, (downDip, alongStrike), order='F')
-	disY1 = np.reshape(Y, (downDip, alongStrike), order='F')
-	disZ1 = np.reshape(Z, (downDip, alongStrike), order='F')
-
-	if plotType == 'acceleration':
-
-		dis = np.fromfile(fp, np.float64, downDip*alongStrike*3)
-
-		X = dis[::3] #take every third element starting at index 0
-		Y = dis[1::3] #...starting at index 1
-		Z = dis[2::3] #...starting at index 2
-
-		disX2 = np.reshape(X, (downDip, alongStrike), order='F')
-		disY2 = np.reshape(Y, (downDip, alongStrike), order='F')
-		disZ2 = np.reshape(Z, (downDip, alongStrike), order='F')
-
 ''' Use the user input to decide which components to plot '''
 
 def components():
@@ -449,6 +412,43 @@ def matrices():
 	x, y = np.meshgrid(x, y)
 	peak = np.zeros_like(x)
 
+''' Read the binary file input by the user, take the X, Y, and Z
+	values and reshape into a matrix '''
+
+def readFile():
+	global dis
+	global X
+	global Y
+	global Z
+	global disX1
+	global disY1
+	global disZ1
+	global disX2
+	global disY2
+	global disZ2
+
+	dis = np.fromfile(fp, np.float64, downDip*alongStrike*3)
+
+	X = dis[::3] #take every third element starting at index 0
+	Y = dis[1::3] #...starting at index 1
+	Z = dis[2::3] #...starting at index 2
+
+	disX = np.reshape(X, (downDip, alongStrike), order='F')
+	disY = np.reshape(Y, (downDip, alongStrike), order='F')
+	disZ = np.reshape(Z, (downDip, alongStrike), order='F')
+
+	return disX, disY, disZ
+
+''' For displacement plots '''
+
+def readDisplacement():
+	global disX1
+	global disY1
+	global disZ1 
+
+	disX1, disY1, disZ1 = readFile()
+
+
 ''' For velocity plots '''
 
 def readVelocity():
@@ -460,15 +460,7 @@ def readVelocity():
 	global velY
 	global velZ
 
-	dis = np.fromfile(fp, np.float64, downDip*alongStrike*3)
-
-	X = dis[::3] #take every third element starting at index 0
-	Y = dis[1::3] #...starting at index 1
-	Z = dis[2::3] #...starting at index 2
-
-	disX2 = np.reshape(X, (downDip, alongStrike), order='F')
-	disY2 = np.reshape(Y, (downDip, alongStrike), order='F')
-	disZ2 = np.reshape(Z, (downDip, alongStrike), order='F')
+	disX2, disY2, disZ2 = readFile()
 
 	velX = (1/deltaT)*(disX2-disX1)
 	velY = (1/deltaT)*(disY2-disY1)
@@ -490,15 +482,7 @@ def readAcceleration():
 	global accelY
 	global accelZ
 
-	dis = np.fromfile(fp, np.float64, downDip*alongStrike*3)
-
-	X = dis[::3] #take every third element starting at index 0
-	Y = dis[1::3] #...starting at index 1
-	Z = dis[2::3] #...starting at index 2
-
-	disX3 = np.reshape(X, (downDip, alongStrike), order='F')
-	disY3 = np.reshape(Y, (downDip, alongStrike), order='F')
-	disZ3 = np.reshape(Z, (downDip, alongStrike), order='F')
+	disX3, disY3, disZ3 = readFile()
 
 	accelX = (disX3-(2*disX2)-disX1)/(np.power(deltaT, 2))
 	accelY = (disY3-(2*disY2)-disY1)/(np.power(deltaT, 2))
@@ -520,6 +504,21 @@ def make_colormap(seq):
             cdict['green'].append([item, g1, g2])
             cdict['blue'].append([item, b1, b2])
     return colors.LinearSegmentedColormap('CustomMap', cdict)
+
+''' Create multiple snapshots '''
+
+def createSnapshots(time):
+
+	if i == int(time*0.1) or i == int(time*0.2):
+		plot()
+	if i == int(time*0.3) or i == int(time*0.4):
+		plot()
+	if i == int(time*0.5) or i == int(time*0.6):
+		plot()
+	if i == int(time*0.7) or i == int(time*0.8):
+		plot()
+	if i == int(time*0.9):
+		plot()
 
 ''' Create the plot '''
 
@@ -559,62 +558,33 @@ def plot():
 counting = 0
 countArguments()
 readInput()
+
+if plotType == 'displacement':
+	start = 0
+if plotType == 'velocity':
+	start = 1
+
 if plotType == 'velocity' or plotType == 'acceleration':
-	readFile()
+	disX1, disY1, disZ1 = readFile()
+	if plotType == 'acceleration':
+		disX2, disY2, disZ2 = readFile()
+		start = 2
+
 matrices()
 
-if plotType == 'displacement' or plotType == 'velocity':
-	for i in range(0, runtime):
-		if plotType == 'velocity' and i == 0:
-			i = i+1
+for i in range(start, runtime):
 
-		if plotType == 'displacement':
-			readFile()
-			components()
+	if plotType == 'displacement':
+		readDisplacement()
+		components()
 
-			if snapshots == "ten" or snapshots == "10":
-				if i == int(runtime*0.1) or i == int(runtime*0.2):
-					plot()
-				if i == int(runtime*0.3) or i == int(runtime*0.4):
-					plot()
-				if i == int(runtime*0.5) or i == int(runtime*0.6):
-					plot()
-				if i == int(runtime*0.7) or i == int(runtime*0.8):
-					plot()
-				if i == int(runtime*0.9):
-					plot()
+	if plotType == 'velocity':
+		readVelocity()
 
-		if plotType == 'velocity':
-			readVelocity()
-
-			if snapshots == "ten" or snapshots == "10":
-				if i == int(runtime*0.1) or i == int(runtime*0.2):
-					plot()
-				if i == int(runtime*0.3) or i == int(runtime*0.4):
-					plot()
-				if i == int(runtime*0.5) or i == int(runtime*0.6):
-					plot()
-				if i == int(runtime*0.7) or i == int(runtime*0.8):
-					plot()
-				if i == int(runtime*0.9):
-					plot()
-
-if plotType == 'acceleration':
-	for i in range(2, runtime):
+	if plotType == 'acceleration':
 		readAcceleration()
 
-		if snapshots == "ten" or snapshots == "10":
-			if i == int(runtime*0.1) or i == int(runtime*0.2):
-				plot()
-			if i == int(runtime*0.3) or i == int(runtime*0.4):
-				plot()
-			if i == int(runtime*0.5) or i == int(runtime*0.6):
-				plot()
-			if i == int(runtime*0.7) or i == int(runtime*0.8):
-				plot()
-			if i == int(runtime*0.9):
-				plot()
-
+	if snapshots == "ten" or snapshots == "10":
+			createSnapshots(runtime)
 
 plot()
-plt.show()
