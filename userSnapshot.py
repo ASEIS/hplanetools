@@ -171,9 +171,10 @@ def readInput():
 		stepDownDip = testInput_text(params, ValueError, 
 			"Parameter stepDownDip is of incorrect type", 'i')
 
-		checkList = (["x", "y", "z", "xy", "xz", "yz", "xyz"])
+		checkList = (["x", "y", "z", "xy", "yx", "xz", "zx", "yz", "zy", "xyz", "xzy", "yxz", "yzx", "zxy", "zyx"])
 		magSelect = testInput_text(params, checkList, 
 			"Invalid input for magSelect", 's')
+		magSelect = define_mag(magSelect)
 
 		checkList = (["linear", "logarithmic", "log"])
 		scale = testInput_text(params, checkList, 
@@ -224,9 +225,10 @@ def readInput():
 		stepDownDip = testInput("Enter an integer value for stepDownDip: ",
 			NameError, "Parameter is of incorrect type", 'i')
 
-		checkList = (["x", "y", "z", "xy", "xz", "yz", "xyz"])
+		checkList = (["x", "y", "z", "xy", "yx", "xz", "zx", "yz", "zy", "xyz", "xzy", "yxz", "yzx", "zxy", "zyx"])
 		magSelect = testInput("Enter the axis to plot: ", checkList, 
 			"Invalid input for magSelect", 's')
+		magSelect = define_mag(magSelect)
 
 		checkList = (["linear", "log", "logarithmic"])
 		scale = testInput("Plot using linear scale or logarithmic scale? ", 
@@ -280,9 +282,10 @@ def readInput():
 		stepDownDip = testInput_terminal(ValueError,
 			"stepDownDip is of incorrect type", 'i', 8)
 
-		checkList = (["x", "y", "z", "xy", "xz", "yz", "xyz"])
+		checkList = (["x", "y", "z", "xy", "yx", "xz", "zx", "yz", "zy", "xyz", "xzy", "yxz", "yzx", "zxy", "zyx"])
 		magSelect = testInput_terminal(checkList, 
 			"Invalid input for magSelect", 's', 9)
+		magSelect = define_mag(magSelect)
 
 		checkList = (["linear", "log", "logarithmic"])
 		scale = testInput_terminal(checkList, 
@@ -313,9 +316,26 @@ def readInput():
 	iterations = int(simulationTime/deltaT)
 	runtime = iterations-1
 
-''' Use the user input to decide which components to plot '''
+def define_mag(userString):
 
-def components():
+	charList = list(userString)
+	result = []
+
+	for i in range(len(charList)):
+		if charList[i] == 'x':
+			result.append(0)
+		if charList[i] == 'y':
+			result.append(1)
+		if charList[i] == 'z':
+			result.append(2)
+
+	result = sorted(result)
+	return result
+
+''' Use the user input to decide which components to use for 
+	displacement plots '''
+
+def disComponents():
 	global peak
 	global velX
 	global velY
@@ -324,80 +344,99 @@ def components():
 	global accelY
 	global accelZ
 
-	if magSelect == "x" and plotType == "displacement":
+	if magSelect == [0]:
 		peak = np.maximum(peak, np.absolute(disX1.transpose()))
 
-	if magSelect == "x"	and plotType == "velocity":
-		peak = np.maximum(np.absolute(velX.transpose()), peak)
-
-	if magSelect == "x"	and plotType == "acceleration":
-		peak = np.maximum(np.absolute(accelX.transpose()), peak)
-
-	if magSelect == "y" and plotType == "displacement":
+	if magSelect == [1]:
 		peak = np.maximum(peak, np.absolute(disY1.transpose()))
 
-	if magSelect == "y" and plotType == "velocity":
-		peak = np.maximum(np.absolute(velY.transpose()), peak)
-
-	if magSelect == "y" and plotType == "acceleration":
-		peak = np.maximum(np.absolute(accelY.transpose()), peak)
-
-	if magSelect == "z" and plotType == "displacement":
+	if magSelect == [2]:
 		peak = np.maximum(peak, np.absolute(disZ1.transpose()))
-
-	if magSelect == "z" and plotType == "velocity":
-		peak = np.maximum(np.absolute(velZ.transpose()), peak)
-
-	if magSelect == "z" and plotType == "acceleration":
-		peak = np.maximum(np.absolute(accelZ.transpose()), peak)
 	
-	if magSelect == "xy" and plotType == "displacement":
+	if magSelect == [0,1]:
 		horizMag = np.sqrt(np.power(disX1, 2) + np.power(disY1, 2))
 		peak = np.maximum(peak, horizMag.transpose())
 
-	if magSelect == "xy" and plotType == "velocity":
-		horizMag = np.sqrt(np.power(velX, 2) + np.power(velY, 2))
-		peak = np.maximum(peak, horizMag.transpose())
-
-	if magSelect == "xy" and plotType == "acceleration":
-		horizMag = np.sqrt(np.power(accelX, 2) + np.power(accelY, 2))
-		peak = np.maximum(peak, horizMag.transpose())
-
-	if magSelect == "yz" and plotType == "displacement":
+	if magSelect == [1,2]:
 		horizMag = np.sqrt(np.power(disY1, 2) + np.power(disZ1, 2))
 		peak = np.maximum(peak, horizMag.transpose())
 
-	if magSelect == "yz" and plotType == "velocity":
-		horizMag = np.sqrt(np.power(velY, 2) + np.power(velZ, 2))
-		peak = np.maximum(peak, horizMag.transpose())
-
-	if magSelect == "yz" and plotType == "acceleration":
-		horizMag = np.sqrt(np.power(accelY, 2) + np.power(accelZ, 2))
-		peak = np.maximum(peak, horizMag.transpose())
-
-	if magSelect == "xz" and plotType == "displacement":
+	if magSelect == [0,2]:
 		horizMag = np.sqrt(np.power(disX1, 2) + np.power(disZ1, 2))
 		peak = np.maximum(peak, horizMag.transpose())
 
-	if magSelect == "xz" and plotType == "velocity":
-		horizMag = np.sqrt(np.power(velX, 2) + np.power(velZ, 2))
-		peak = np.maximum(peak, horizMag.transpose())
-
-	if magSelect == "xz" and plotType == "acceleration":
-		horizMag = np.sqrt(np.power(accelX, 2) + np.power(accelZ, 2))
-		peak = np.maximum(peak, horizMag.transpose())
-
-	if magSelect == "xyz" and plotType == "displacement":
+	if magSelect == [0,1,2]:
 		totalMag = np.sqrt(np.power(disX1, 2) + np.power(disY1, 2)
 		+ np.power(disZ1, 2))
 		peak = np.maximum(peak, totalMag.transpose())
 
-	if magSelect == "xyz" and plotType == "velocity":
+def velComponents():
+	global peak
+	global velX
+	global velY
+	global velZ
+	global accelX
+	global accelY
+	global accelZ
+
+	if magSelect == [0]:
+		peak = np.maximum(np.absolute(velX.transpose()), peak)
+
+	if magSelect == [1]:
+		peak = np.maximum(np.absolute(velY.transpose()), peak)
+
+	if magSelect == [2]:
+		peak = np.maximum(np.absolute(velZ.transpose()), peak)
+
+	if len(magSelect) == 2:
+
+		if magSelect == [0,1]:
+			horizMag = np.sqrt(np.power(velX, 2) + np.power(velY, 2))
+
+		if magSelect == [1,2]:
+			horizMag = np.sqrt(np.power(velY, 2) + np.power(velZ, 2))
+
+		if magSelect == [0,2]:
+			horizMag = np.sqrt(np.power(velX, 2) + np.power(velZ, 2))
+
+		peak = np.maximum(peak, horizMag.transpose())
+
+	if magSelect == [0,1,2]:
 		totalMag = np.sqrt(np.power(velX, 2) + np.power(velY, 2)
 		+ np.power(velZ, 2))
 		peak = np.maximum(peak, totalMag.transpose())
 
-	if magSelect == "xyz" and plotType == "acceleration":
+def accelComponents():
+	global peak
+	global velX
+	global velY
+	global velZ
+	global accelX
+	global accelY
+	global accelZ
+
+	if magSelect == [0]:
+		peak = np.maximum(np.absolute(accelX.transpose()), peak)
+
+	if magSelect == [1]:
+		peak = np.maximum(np.absolute(accelY.transpose()), peak)
+
+	if magSelect == [2]:
+		peak = np.maximum(np.absolute(accelZ.transpose()), peak)
+
+	if len(magSelect) == 2:
+		if magSelect == [0,1]:
+			horizMag = np.sqrt(np.power(accelX, 2) + np.power(accelY, 2))
+
+		if magSelect == [1,2]:
+			horizMag = np.sqrt(np.power(accelY, 2) + np.power(accelZ, 2))
+
+		if magSelect == [0,2]:
+			horizMag = np.sqrt(np.power(accelX, 2) + np.power(accelZ, 2))
+
+		peak = np.maximum(peak, horizMag.transpose())
+
+	if magSelect == [0,1,2]:
 		totalMag = np.sqrt(np.power(accelX, 2) + np.power(accelY, 2)
 		+ np.power(accelZ, 2))
 		peak = np.maximum(peak, totalMag.transpose())
@@ -466,7 +505,7 @@ def readVelocity():
 	velY = (1/deltaT)*(disY2-disY1)
 	velZ = (1/deltaT)*(disZ2-disZ1)
 
-	components()
+	velComponents()
 	disX1 = disX2
 
 ''' For acceleration plots '''
@@ -488,7 +527,7 @@ def readAcceleration():
 	accelY = (disY3-(2*disY2)-disY1)/(np.power(deltaT, 2))
 	accelZ = (disZ3-(2*disZ2)-disZ1)/(np.power(deltaT, 2))
 
-	components()
+	accelComponents()
 
 ''' for custom color maps '''
 
@@ -576,7 +615,7 @@ for i in range(start, runtime):
 
 	if plotType == 'displacement':
 		readDisplacement()
-		components()
+		disComponents()
 
 	if plotType == 'velocity':
 		readVelocity()
