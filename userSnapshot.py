@@ -508,7 +508,7 @@ def createSnapshots(time, peak, counting, colorMap, colorChoice, plotType, userC
 
 ''' Create the plot '''
 
-def plot(peak, counting, colorMap, colorChoice, plotType):
+def plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3):
 
 	counting = counting + 1
 
@@ -574,4 +574,4 @@ for i in range(start, runtime):
 	if snapshots == "ten" or snapshots == "10":
 		createSnapshots(runtime, peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
 
-plot(peak, counting, colorMap, colorChoice, plotType)
+plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
