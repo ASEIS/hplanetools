@@ -154,10 +154,14 @@ def readInput(count):
 		stepDownDip = testInput_text(params, ValueError, 
 			"Parameter stepDownDip is of incorrect type", 'i')
 
-		checkList = (["x", "y", "z", "xy", "yx", "xz", "zx", "yz", "zy", "xyz", "xzy", "yxz", "yzx", "zxy", "zyx"])
-		magSelect = testInput_text(params, checkList, 
-			"Invalid input for magSelect", 's')
-		magSelect = define_mag(magSelect)
+		while True:
+			magSelect = params.pop(0)
+			if 'x' in magSelect or 'y' in magSelect or 'z' in magSelect:
+				magSelect = define_mag(magSelect)
+				break
+			else:
+				print "Invalid input for magSelect"
+				sys.exit()
 
 		checkList = (["linear", "logarithmic", "log"])
 		scale = testInput_text(params, checkList, 
@@ -212,10 +216,13 @@ def readInput(count):
 		stepDownDip = testInput("Enter an integer value for stepDownDip: ",
 			NameError, "Parameter is of incorrect type", 'i')
 
-		checkList = (["x", "y", "z", "xy", "yx", "xz", "zx", "yz", "zy", "xyz", "xzy", "yxz", "yzx", "zxy", "zyx"])
-		magSelect = testInput("Enter the axis to plot: ", checkList, 
-			"Invalid input for magSelect", 's')
-		magSelect = define_mag(magSelect)
+		while True:
+			magSelect = raw_input("Enter the axis to plot: ")
+			if 'x' in magSelect or 'y' in magSelect or 'z' in magSelect:
+				magSelect = define_mag(magSelect)
+				break
+			else:
+				print "Invalid input for magSelect"
 
 		checkList = (["linear", "log", "logarithmic"])
 		scale = testInput("Plot using linear scale or logarithmic scale? ", 
@@ -273,10 +280,14 @@ def readInput(count):
 		stepDownDip = testInput_terminal(ValueError,
 			"stepDownDip is of incorrect type", 'i', 8)
 
-		checkList = (["x", "y", "z", "xy", "yx", "xz", "zx", "yz", "zy", "xyz", "xzy", "yxz", "yzx", "zxy", "zyx"])
-		magSelect = testInput_terminal(checkList, 
-			"Invalid input for magSelect", 's', 9)
-		magSelect = define_mag(magSelect)
+		while True:
+			magSelect = sys.argv[9]
+			if 'x' in magSelect or 'y' in magSelect or 'z' in magSelect:
+				magSelect = define_mag(magSelect)
+				break
+			else:
+				print "Invalid input for magSelect"
+				sys.exit()
 
 		checkList = (["linear", "log", "logarithmic"])
 		scale = testInput_terminal(checkList, 
@@ -496,15 +507,17 @@ def make_colormap(seq):
 def createSnapshots(time, peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3):
 
 	if i == int(time*0.1) or i == int(time*0.2):
-		plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
+		counting = plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
 	if i == int(time*0.3) or i == int(time*0.4):
-		plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
+		counting = plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
 	if i == int(time*0.5) or i == int(time*0.6):
-		plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
+		counting = plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
 	if i == int(time*0.7) or i == int(time*0.8):
-		plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
+		counting = plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
 	if i == int(time*0.9):
-		plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
+		counting = plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
+
+	return counting
 
 ''' Create the plot '''
 
@@ -515,8 +528,8 @@ def plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2
 	if colorChoice == 'colors' or colorChoice == 'custom colors' or colorChoice == 'custom':
 		c = colors.ColorConverter().to_rgb
 		colorMap = make_colormap(
-    	[c(userColor1), c(userColor2), 0.33, c(userColor2), 
-    	c(userColor3), 0.66, c(userColor3)])
+    	[c(userColor1), c(userColor2), 0.5, c(userColor2), 
+    	c(userColor3), 1, c(userColor3)])
 
 	fig = plt.imshow(peak, cmap=colorMap)
 
@@ -538,6 +551,7 @@ def plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2
 		plt.savefig("acceleration" + str(counting) + ".png")
 
 	plt.show()
+	return counting
 
 counting = 0
 count = countArguments()
@@ -572,6 +586,6 @@ for i in range(start, runtime):
 		peak, disX1, disY1, disZ1, disX2, disY2, disZ2 = readAcceleration(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1, disX2, disY2, disZ2)
 
 	if snapshots == "ten" or snapshots == "10":
-		createSnapshots(runtime, peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
+		counting = createSnapshots(runtime, peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
 
 plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
