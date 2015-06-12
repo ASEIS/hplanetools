@@ -119,7 +119,7 @@ def readInput(count):
 				print "File not found!"
 				sys.exit()
 
-		if len(params) != 13 and len(params) != 15:
+		if len(params) < 13 and len(params) > 16:
 			print "Text file has an invalid number of parameters"
 			sys.exit()
 
@@ -167,9 +167,15 @@ def readInput(count):
 		scale = testInput_text(params, checkList, 
 			"Invalid input for plotType", 's')
 
-		checkList = (["final", "ten", "10"])
+		checkList = (["final", "multiple"])
 		snapshots = testInput_text(params, checkList,
 			"Invalid input for snapshots", 's')
+
+		if snapshots == "multiple":
+			numSnapshots = testInput_text(params, ValueError,
+				"Parameter numSnapshots is of incorrect type", 'i')
+		else:
+			numSnapshots = 0
 
 		colorChoice = params.pop(0)
 
@@ -228,9 +234,15 @@ def readInput(count):
 		scale = testInput("Plot using linear scale or logarithmic scale? ", 
 			checkList, """ Please enter "linear" or logarithmic """, 's')
 
-		checkList = (["final", "ten", "10"])
-		snapshots = testInput("Display only the final snapshot or ten snapshots? ",
-			checkList, """Please enter "final" or "ten" """, 's')
+		checkList = (["final", "multiple"])
+		snapshots = testInput("Display only the final snapshot or multiple snapshots? ",
+			checkList, """Please enter "final" or "multiple" """, 's')
+
+		if snapshots == "multiple":
+			numSnapshots = testInput("How many snapshots to take? ", checkList,
+				"Please enter an integer", 'i')
+		else:
+			numSnapshots = 0
 
 		checkList = (["color map", "custom colors", "map", "colors", "custom"])
 		colorChoice = testInput("Use a color map or custom colors? ", checkList, 
@@ -293,31 +305,50 @@ def readInput(count):
 		scale = testInput_terminal(checkList, 
 			""" Please enter "linear" or logarithmic """, 's', 10)
 
-		checkList = (["final", "ten", "10"])
+		checkList = (["final", "multiple"])
 		snapshots = testInput_terminal(checkList, 
-			""" Please enter "final" or "ten" """, 's', 11)
+			""" Please enter "final" or "multiple" """, 's', 11)
 
-		checkList = (["color map", "custom colors", "map", "colors", "custom"])
-		colorChoice = testInput_terminal(checkList, 
-			""" Please enter "map" or "custom" """, 's', 12)
+		if snapshots == "multiple":
+			numSnapshots = testInput_terminal(params, ValueError,
+				"Parameter numSnapshots is of incorrect type", 'i', 12)
+		else:
+			numSnapshots = 0
+
+		if snapshots == "multiple":
+			checkList = (["color map", "custom colors", "map", "colors", "custom"])
+			colorChoice = testInput_terminal(checkList, 
+				""" Please enter "map" or "custom" """, 's', 13)
+		else:
+			checkList = (["color map", "custom colors", "map", "colors", "custom"])
+			colorChoice = testInput_terminal(checkList, 
+				""" Please enter "map" or "custom" """, 's', 12)
 
 		if colorChoice == 'map' or colorChoice == 'colormap':
-			colorMap = sys.argv[13]
+			if snapshots == "multiple":
+				colorMap = sys.argv[14]
+			else:
+				colorMap = sys.argv[13]
 			userColor1 = 0
 			userColor2 = 0
 			userColor3 = 0
 
 		else:
-			userColor1 = sys.argv[13]
-			userColor2 = sys.argv[14]
-			userColor3 = sys.argv[15]
+			if snapshots == "multiple":
+				userColor1 = sys.argv[14]
+				userColor2 = sys.argv[15]
+				userColor3 = sys.argv[16]
+			else: 
+				userColor1 = sys.argv[13]
+				userColor2 = sys.argv[14]
+				userColor3 = sys.argv[15]
 			colorMap = 0
 
-	if count != 0 and count != 1 and count != 13 and count != 15:
+	if count != 0 and count != 1 and count != 13 count != 14 and count != 15 and count != 16:
 		print "Invalid input"
 		sys.exit()
 
-	return fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, colorChoice, userColor1, userColor2, userColor3, colorMap
+	return fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, numSnapshots, colorChoice, userColor1, userColor2, userColor3, colorMap
 
 def define_mag(userString):
 
@@ -504,18 +535,11 @@ def make_colormap(seq):
 
 ''' Create multiple snapshots '''
 
-def createSnapshots(time, peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3):
+def createSnapshots(time, peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3, numSnapshots):
 
-	if i == int(time*0.1) or i == int(time*0.2):
-		counting = plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
-	if i == int(time*0.3) or i == int(time*0.4):
-		counting = plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
-	if i == int(time*0.5) or i == int(time*0.6):
-		counting = plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
-	if i == int(time*0.7) or i == int(time*0.8):
-		counting = plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
-	if i == int(time*0.9):
-		counting = plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
+	if i > 1:
+		if i%(time/numSnapshots) == 0:
+			counting = plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
 
 	return counting
 
@@ -555,7 +579,7 @@ def plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2
 
 counting = 0
 count = countArguments()
-fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, colorChoice, userColor1, userColor2, userColor3, colorMap = readInput(count)
+fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, numSnapshots, colorChoice, userColor1, userColor2, userColor3, colorMap = readInput(count)
 
 iterations = int(simulationTime/deltaT)
 runtime = iterations-1
@@ -585,7 +609,8 @@ for i in range(start, runtime):
 	if plotType == 'acceleration':
 		peak, disX1, disY1, disZ1, disX2, disY2, disZ2 = readAcceleration(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1, disX2, disY2, disZ2)
 
-	if snapshots == "ten" or snapshots == "10":
-		counting = createSnapshots(runtime, peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
+	if numSnapshots != 0:
+		counting = createSnapshots(runtime, peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3, numSnapshots)
 
-plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
+if numSnapshots == 0:
+	plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
