@@ -12,6 +12,48 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib import colors
 
+class Input(object):
+	fp = ""
+	plotType = ""
+	deltaT = 0.0
+	simulationTime = 0
+	alongStrike = 0
+	downDip = 0
+	stepAlongStrike = 0
+	stepDownDip = 0
+	magSelect = ""
+	scale = ""
+	snapshots = ""
+	numSnapshots = 0
+	colorChoice = ""
+	userColor1 = ""
+	userColor2 = ""
+	userColor3 = ""
+	colorMap = ""
+
+	def __init__(self, fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, numSnapshots, colorChoice, userColor1, userColor2, userColor3, colorMap):
+		self.fp = fp
+		self.plotType = plotType
+		self.deltaT = deltaT
+		self.simulationTime = simulationTime
+		self.alongStrike = alongStrike
+		self.downDip = downDip
+		self.stepAlongStrike = stepAlongStrike
+		self.stepDownDip = stepDownDip
+		self.magSelect = magSelect
+		self.scale = scale
+		self.snapshots = snapshots
+		self.numSnapshots = numSnapshots
+		self.colorChoice = colorChoice
+		self.userColor1 = userColor1
+		self.userColor2 = userColor2
+		self.userColor3 = userColor3
+		self.colorMap = colorMap
+
+def make_input(fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, numSnapshots, colorChoice, userColor1, userColor2, userColor3, colorMap):
+	input = Input(fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, numSnapshots, colorChoice, userColor1, userColor2, userColor3, colorMap)
+	return input
+
 ''' Check how many arguments the user inputs '''
 
 def countArguments():
@@ -348,7 +390,10 @@ def readInput(count):
 		print "Invalid input"
 		sys.exit()
 
-	return fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, numSnapshots, colorChoice, userColor1, userColor2, userColor3, colorMap
+	userInput = make_input(fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, numSnapshots, colorChoice, userColor1, userColor2, userColor3, colorMap)
+	return userInput
+
+	# return fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, numSnapshots, colorChoice, userColor1, userColor2, userColor3, colorMap
 
 def define_mag(userString):
 
@@ -369,91 +414,92 @@ def define_mag(userString):
 ''' Use the user input to decide which components to use for 
 	displacement plots '''
 
-def disComponents(peak, magSelect):
+# def disComponents(peak, magSelect):
+def disComponents(peak, userInput):
 
-	if magSelect == [0]:
+	if userInput.magSelect == [0]:
 		peak = np.maximum(peak, np.absolute(disX1.transpose()))
 
-	if magSelect == [1]:
+	if userInput.magSelect == [1]:
 		peak = np.maximum(peak, np.absolute(disY1.transpose()))
 
-	if magSelect == [2]:
+	if userInput.magSelect == [2]:
 		peak = np.maximum(peak, np.absolute(disZ1.transpose()))
 	
-	if magSelect == [0,1]:
+	if userInput.magSelect == [0,1]:
 		horizMag = np.sqrt(np.power(disX1, 2) + np.power(disY1, 2))
 		peak = np.maximum(peak, horizMag.transpose())
 
-	if magSelect == [1,2]:
+	if userInput.magSelect == [1,2]:
 		horizMag = np.sqrt(np.power(disY1, 2) + np.power(disZ1, 2))
 		peak = np.maximum(peak, horizMag.transpose())
 
-	if magSelect == [0,2]:
+	if userInput.magSelect == [0,2]:
 		horizMag = np.sqrt(np.power(disX1, 2) + np.power(disZ1, 2))
 		peak = np.maximum(peak, horizMag.transpose())
 
-	if magSelect == [0,1,2]:
+	if userInput.magSelect == [0,1,2]:
 		totalMag = np.sqrt(np.power(disX1, 2) + np.power(disY1, 2)
 		+ np.power(disZ1, 2))
 		peak = np.maximum(peak, totalMag.transpose())
 
 	return peak
 
-def velComponents(peak, magSelect, velX, velY, velZ):
+def velComponents(peak, userInput, velX, velY, velZ):
 
-	if magSelect == [0]:
+	if userInput.magSelect == [0]:
 		peak = np.maximum(np.absolute(velX.transpose()), peak)
 
-	if magSelect == [1]:
+	if userInput.magSelect == [1]:
 		peak = np.maximum(np.absolute(velY.transpose()), peak)
 
-	if magSelect == [2]:
+	if userInput.magSelect == [2]:
 		peak = np.maximum(np.absolute(velZ.transpose()), peak)
 
-	if len(magSelect) == 2:
+	if len(userInput.magSelect) == 2:
 
-		if magSelect == [0,1]:
+		if userInput.magSelect == [0,1]:
 			horizMag = np.sqrt(np.power(velX, 2) + np.power(velY, 2))
 
-		if magSelect == [1,2]:
+		if userInput.magSelect == [1,2]:
 			horizMag = np.sqrt(np.power(velY, 2) + np.power(velZ, 2))
 
-		if magSelect == [0,2]:
+		if userInput.magSelect == [0,2]:
 			horizMag = np.sqrt(np.power(velX, 2) + np.power(velZ, 2))
 
 		peak = np.maximum(peak, horizMag.transpose())
 
-	if magSelect == [0,1,2]:
+	if userInput.magSelect == [0,1,2]:
 		totalMag = np.sqrt(np.power(velX, 2) + np.power(velY, 2)
 		+ np.power(velZ, 2))
 		peak = np.maximum(peak, totalMag.transpose())
 
 	return peak
 
-def accelComponents(peak, magSelect, accelX, accelY, accelZ):
+def accelComponents(peak, userInput, accelX, accelY, accelZ):
 
-	if magSelect == [0]:
+	if userInput.magSelect == [0]:
 		peak = np.maximum(np.absolute(accelX.transpose()), peak)
 
-	if magSelect == [1]:
+	if userInput.magSelect == [1]:
 		peak = np.maximum(np.absolute(accelY.transpose()), peak)
 
-	if magSelect == [2]:
+	if userInput.magSelect == [2]:
 		peak = np.maximum(np.absolute(accelZ.transpose()), peak)
 
-	if len(magSelect) == 2:
-		if magSelect == [0,1]:
+	if len(userInput.magSelect) == 2:
+		if userInput.magSelect == [0,1]:
 			horizMag = np.sqrt(np.power(accelX, 2) + np.power(accelY, 2))
 
-		if magSelect == [1,2]:
+		if userInput.magSelect == [1,2]:
 			horizMag = np.sqrt(np.power(accelY, 2) + np.power(accelZ, 2))
 
-		if magSelect == [0,2]:
+		if userInput.magSelect == [0,2]:
 			horizMag = np.sqrt(np.power(accelX, 2) + np.power(accelZ, 2))
 
 		peak = np.maximum(peak, horizMag.transpose())
 
-	if magSelect == [0,1,2]:
+	if userInput.magSelect == [0,1,2]:
 		totalMag = np.sqrt(np.power(accelX, 2) + np.power(accelY, 2)
 		+ np.power(accelZ, 2))
 		peak = np.maximum(peak, totalMag.transpose())
@@ -462,10 +508,11 @@ def accelComponents(peak, magSelect, accelX, accelY, accelZ):
 
 ''' Set up our arrays and matrices '''
 
-def matrices(stepAlongStrike, alongStrike, downDip, stepDownDip):
+# def matrices(stepAlongStrike, alongStrike, downDip, stepDownDip):
+def matrices(userInput):
 
-	y = np.array(range(0, stepAlongStrike*alongStrike, stepAlongStrike))
-	x = np.array(range(0, stepDownDip*downDip, stepDownDip))
+	y = np.array(range(0, userInput.stepAlongStrike*userInput.alongStrike, userInput.stepAlongStrike))
+	x = np.array(range(0, userInput.stepDownDip*userInput.downDip, userInput.stepDownDip))
 	x, y = np.meshgrid(x, y)
 	peak = np.zeros_like(x)
 
@@ -474,31 +521,33 @@ def matrices(stepAlongStrike, alongStrike, downDip, stepDownDip):
 ''' Read the binary file input by the user, take the X, Y, and Z
 	values and reshape into a matrix '''
 
-def readFile(fp, downDip, alongStrike):
+# def readFile(fp, downDip, alongStrike):
+def readFile(userInput):
 
-	dis = np.fromfile(fp, np.float64, downDip*alongStrike*3)
+	dis = np.fromfile(userInput.fp, np.float64, userInput.downDip*userInput.alongStrike*3)
 
 	X = dis[::3] #take every third element starting at index 0
 	Y = dis[1::3] #...starting at index 1
 	Z = dis[2::3] #...starting at index 2
 
-	disX = np.reshape(X, (downDip, alongStrike), order='F')
-	disY = np.reshape(Y, (downDip, alongStrike), order='F')
-	disZ = np.reshape(Z, (downDip, alongStrike), order='F')
+	disX = np.reshape(X, (userInput.downDip, userInput.alongStrike), order='F')
+	disY = np.reshape(Y, (userInput.downDip, userInput.alongStrike), order='F')
+	disZ = np.reshape(Z, (userInput.downDip, userInput.alongStrike), order='F')
 
 	return disX, disY, disZ
 
 ''' For velocity plots '''
 
-def readVelocity(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1):
+# def readVelocity(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1):
+def readVelocity(peak, userInput, disX1, disY1, disZ1):
 
-	disX2, disY2, disZ2 = readFile(fp, downDip, alongStrike)
+	disX2, disY2, disZ2 = readFile(userInput)
 
-	velX = (1/deltaT)*(disX2-disX1)
-	velY = (1/deltaT)*(disY2-disY1)
-	velZ = (1/deltaT)*(disZ2-disZ1)
+	velX = (1/userInput.deltaT)*(disX2-disX1)
+	velY = (1/userInput.deltaT)*(disY2-disY1)
+	velZ = (1/userInput.deltaT)*(disZ2-disZ1)
 
-	peak = velComponents(peak, magSelect, velX, velY, velZ)
+	peak = velComponents(peak, userInput, velX, velY, velZ)
 	disX1 = disX2
 	disY1 = disY2
 	disZ1 = disZ2
@@ -507,15 +556,16 @@ def readVelocity(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1)
 
 ''' For acceleration plots '''
 
-def readAcceleration(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1, disX2, disY2, disZ2):
+# def readAcceleration(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1, disX2, disY2, disZ2):
+def readAcceleration(peak, userInput, disX1, disY1, disZ1, disX2, disY2, disZ2):
 
-	disX3, disY3, disZ3 = readFile(fp, downDip, alongStrike)
+	disX3, disY3, disZ3 = readFile(userInput)
 
-	accelX = (disX3-(2*disX2)-disX1)/(np.power(deltaT, 2))
-	accelY = (disY3-(2*disY2)-disY1)/(np.power(deltaT, 2))
-	accelZ = (disZ3-(2*disZ2)-disZ1)/(np.power(deltaT, 2))
+	accelX = (disX3-(2*disX2)-disX1)/(np.power(userInput.deltaT, 2))
+	accelY = (disY3-(2*disY2)-disY1)/(np.power(userInput.deltaT, 2))
+	accelZ = (disZ3-(2*disZ2)-disZ1)/(np.power(userInput.deltaT, 2))
 
-	peak = accelComponents(peak, magSelect, accelX, accelY, accelZ)
+	peak = accelComponents(peak, userInput, accelX, accelY, accelZ)
 	return peak, disX1, disY1, disZ1, disX2, disY2, disZ2
 
 ''' for custom color maps '''
@@ -535,43 +585,45 @@ def make_colormap(seq):
 
 ''' Create multiple snapshots '''
 
-def createSnapshots(time, peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3, numSnapshots, scale):
+def createSnapshots(time, peak, counting, userInput):
 
 	if i > 1:
-		if i%(time/numSnapshots) == 0:
-			counting = plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3, scale)
+		if i%(time/userInput.numSnapshots) == 0:
+			counting = plot(peak, counting, userInput)
 
 	return counting
 
 ''' Create the plot '''
 
-def plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3, scale):
+def plot(peak, counting, userInput):
 
 	counting = counting + 1
 
-	if colorChoice == 'colors' or colorChoice == 'custom colors' or colorChoice == 'custom':
+	if userInput.colorChoice == 'colors' or userInput.colorChoice == 'custom colors' or userInput.colorChoice == 'custom':
 		c = colors.ColorConverter().to_rgb
-		colorMap = make_colormap(
-    	[c(userColor1), c(userColor2), 0.5, c(userColor2), 
-    	c(userColor3), 1, c(userColor3)])
+		userInput.colorMap = make_colormap(
+    	[c(userInput.userColor1), c(userInput.userColor2), 0.5, 
+    	c(userInput.userColor2), c(userInput.userColor3), 1, 
+    	c(userInput.userColor3)])
 
-	fig = plt.imshow(peak, cmap=colorMap)
+	fig = plt.imshow(peak, cmap=userInput.colorMap)
 
 	plt.axis('off')
 	plt.gca().invert_yaxis()
 
-	m = cm.ScalarMappable(cmap=colorMap)
+	m = cm.ScalarMappable(cmap=userInput.colorMap)
 	m.set_array(peak)
 	plt.colorbar(m)
 	plt.xlabel('X')
 	plt.ylabel('Y')
+	plt.suptitle('t = ' + (str)((int)(i*userInput.deltaT)), fontsize=20)
 	plt.axis('scaled')
 
-	if plotType == 'displacement':
+	if userInput.plotType == 'displacement':
 		plt.savefig("displacement" + str(counting) + ".png")
-	if plotType == 'velocity':
+	if userInput.plotType == 'velocity':
 		plt.savefig("velocity" + str(counting) + ".png")
-	if plotType == 'acceleration':
+	if userInput.plotType == 'acceleration':
 		plt.savefig("acceleration" + str(counting) + ".png")
 
 	plt.show()
@@ -579,38 +631,40 @@ def plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2
 
 counting = 0
 count = countArguments()
-fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, numSnapshots, colorChoice, userColor1, userColor2, userColor3, colorMap = readInput(count)
+userInput = readInput(count)
 
-iterations = int(simulationTime/deltaT)
+iterations = int(userInput.simulationTime/userInput.deltaT)
 runtime = iterations-1
 
-if plotType == 'displacement':
+if userInput.plotType == 'displacement':
 	start = 0
-if plotType == 'velocity':
+if userInput.plotType == 'velocity':
 	start = 1
 
-if plotType == 'velocity' or plotType == 'acceleration':
-	disX1, disY1, disZ1 = readFile(fp, downDip, alongStrike)
-	if plotType == 'acceleration':
-		disX2, disY2, disZ2 = readFile(fp, downDip, alongStrike)
+if userInput.plotType == 'velocity' or userInput.plotType == 'acceleration':
+	disX1, disY1, disZ1 = readFile(userInput)
+	if userInput.plotType == 'acceleration':
+		disX2, disY2, disZ2 = readFile(userInput)
 		start = 2
 
-peak = matrices(stepAlongStrike, alongStrike, downDip, stepDownDip)
+peak = matrices(userInput)
 
 for i in range(start, runtime):
 
-	if plotType == 'displacement':
-		disX1, disY1, disZ1 = readFile(fp, downDip, alongStrike)
-		peak = disComponents(peak, magSelect)
+	if userInput.plotType == 'displacement':
+		disX1, disY1, disZ1 = readFile(userInput)
+		peak = disComponents(peak, userInput)
 
-	if plotType == 'velocity':
-		peak, disX1, disY1, disZ1 = readVelocity(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1)
+	if userInput.plotType == 'velocity':
+		# peak, disX1, disY1, disZ1 = readVelocity(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1)
+		peak, disX1, disY1, disZ1 = readVelocity(peak, userInput, disX1, disY1, disZ1)
 
-	if plotType == 'acceleration':
-		peak, disX1, disY1, disZ1, disX2, disY2, disZ2 = readAcceleration(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1, disX2, disY2, disZ2)
+	if userInput.plotType == 'acceleration':
+		# peak, disX1, disY1, disZ1, disX2, disY2, disZ2 = readAcceleration(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1, disX2, disY2, disZ2)
+		peak, disX1, disY1, disZ1, disX2, disY2, disZ2 = readAcceleration(peak, userInput, disX1, disY1, disZ1, disX2, disY2, disZ2)
 
-	if numSnapshots != 0:
-		counting = createSnapshots(runtime, peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3, numSnapshots, scale)
+	if userInput.numSnapshots != 0:
+		counting = createSnapshots(runtime, peak, counting, userInput)
 
 	percent = float(i)/runtime
 	hashes = '#'*int(round(percent*20))
@@ -618,5 +672,5 @@ for i in range(start, runtime):
 	sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
 	sys.stdout.flush()
 
-if numSnapshots == 0:
-	plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3, scale)
+if userInput.numSnapshots == 0:
+	plot(peak, counting, userInput)
