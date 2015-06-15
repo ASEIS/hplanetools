@@ -344,7 +344,7 @@ def readInput(count):
 				userColor3 = sys.argv[15]
 			colorMap = 0
 
-	if count != 0 and count != 1 and count != 13 count != 14 and count != 15 and count != 16:
+	if count != 0 and count != 1 and count != 13 and count != 14 and count != 15 and count != 16:
 		print "Invalid input"
 		sys.exit()
 
@@ -535,17 +535,17 @@ def make_colormap(seq):
 
 ''' Create multiple snapshots '''
 
-def createSnapshots(time, peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3, numSnapshots):
+def createSnapshots(time, peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3, numSnapshots, scale):
 
 	if i > 1:
 		if i%(time/numSnapshots) == 0:
-			counting = plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
+			counting = plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3, scale)
 
 	return counting
 
 ''' Create the plot '''
 
-def plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3):
+def plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3, scale):
 
 	counting = counting + 1
 
@@ -610,7 +610,13 @@ for i in range(start, runtime):
 		peak, disX1, disY1, disZ1, disX2, disY2, disZ2 = readAcceleration(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1, disX2, disY2, disZ2)
 
 	if numSnapshots != 0:
-		counting = createSnapshots(runtime, peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3, numSnapshots)
+		counting = createSnapshots(runtime, peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3, numSnapshots, scale)
+
+	percent = float(i)/runtime
+	hashes = '#'*int(round(percent*20))
+	spaces = ' '*(20-len(hashes))
+	sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
+	sys.stdout.flush()
 
 if numSnapshots == 0:
-	plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3)
+	plot(peak, counting, colorMap, colorChoice, plotType, userColor1, userColor2, userColor3, scale)
