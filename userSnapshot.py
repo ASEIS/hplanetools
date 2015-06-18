@@ -22,16 +22,21 @@ class Input(object):
 	stepAlongStrike = 0
 	stepDownDip = 0
 	magSelect = ""
+	magnitude = ""
 	scale = ""
+	cumulative = ""
 	snapshots = ""
 	numSnapshots = 0
+	barChoice = ""
+	barMin = 0.0
+	barMax = 0.0
 	colorChoice = ""
 	userColor1 = ""
 	userColor2 = ""
 	userColor3 = ""
 	colorMap = ""
 
-	def __init__(self, fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, numSnapshots, colorChoice, userColor1, userColor2, userColor3, colorMap):
+	def __init__(self, fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, magnitude, scale, cumulative, snapshots, numSnapshots, barChoice, barMin, barMax, colorChoice, userColor1, userColor2, userColor3, colorMap):
 		self.fp = fp
 		self.plotType = plotType
 		self.deltaT = deltaT
@@ -41,17 +46,22 @@ class Input(object):
 		self.stepAlongStrike = stepAlongStrike
 		self.stepDownDip = stepDownDip
 		self.magSelect = magSelect
+		self.magnitude = magnitude
 		self.scale = scale
+		self.cumulative = cumulative
 		self.snapshots = snapshots
 		self.numSnapshots = numSnapshots
+		self.barChoice = barChoice
+		self.barMin = barMin
+		self.barMax = barMax
 		self.colorChoice = colorChoice
 		self.userColor1 = userColor1
 		self.userColor2 = userColor2
 		self.userColor3 = userColor3
 		self.colorMap = colorMap
 
-def make_input(fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, numSnapshots, colorChoice, userColor1, userColor2, userColor3, colorMap):
-	input = Input(fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, numSnapshots, colorChoice, userColor1, userColor2, userColor3, colorMap)
+def make_input(fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, magnitude, scale, cumulative, snapshots, numSnapshots, barChoice, barMin, barMax, colorChoice, userColor1, userColor2, userColor3, colorMap):
+	input = Input(fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, magnitude, scale, cumulative, snapshots, numSnapshots, barChoice, barMin, barMax, colorChoice, userColor1, userColor2, userColor3, colorMap)
 	return input
 
 ''' Check how many arguments the user inputs '''
@@ -161,9 +171,9 @@ def readInput(count):
 				print "File not found!"
 				sys.exit()
 
-		if len(params) < 13 and len(params) > 16:
-			print "Text file has an invalid number of parameters"
-			sys.exit()
+		# if len(params) < 13 and len(params) > 16:
+		# 	print "Text file has an invalid number of parameters"
+		# 	sys.exit()
 
 		while True:
 			try:
@@ -205,9 +215,17 @@ def readInput(count):
 				print "Invalid input for magSelect"
 				sys.exit()
 
+		checkList = (["yes", "no"])
+		magnitude = testInput_text(params, checkList,
+			"Invalid input for magnitude", 's')
+
 		checkList = (["linear", "logarithmic", "log"])
 		scale = testInput_text(params, checkList, 
 			"Invalid input for plotType", 's')
+
+		checkList = (["yes", "no"])
+		cumulative = testInput_text(params, checkList,
+			"Invalid input for cumulative", 's')
 
 		checkList = (["final", "multiple"])
 		snapshots = testInput_text(params, checkList,
@@ -218,6 +236,19 @@ def readInput(count):
 				"Parameter numSnapshots is of incorrect type", 'i')
 		else:
 			numSnapshots = 0
+
+		checkList = (["yes", "no"])
+		barChoice = testInput_text(params, checkList,
+			"Invalid input for barChoice", 's')
+
+		if barChoice == "yes":
+			barMin = testInput_text(params, ValueError,
+				"Parameter barMin is of incorrect type", 'f')
+			barMax = testInput_text(params, ValueError,
+				"Parameter barMax is of incorrect type", 'f')
+		else:
+			barMin = 0.0
+			barMax = 0.0
 
 		colorChoice = params.pop(0)
 
@@ -272,9 +303,17 @@ def readInput(count):
 			else:
 				print "Invalid input for magSelect"
 
+		checkList = (["yes", "no"])
+		magnitude = testInput("Would you like to plot the magnitude? ",
+			checkList, """ Please enter "yes" or "no" """, 's')
+
 		checkList = (["linear", "log", "logarithmic"])
 		scale = testInput("Plot using linear scale or logarithmic scale? ", 
 			checkList, """ Please enter "linear" or logarithmic """, 's')
+
+		checkList = (["yes", "no"])
+		cumulative = testInput("Is this a cumulative plot? ", checkList,
+			""" Please enter "yes" or "no" """, 's')
 
 		checkList = (["final", "multiple"])
 		snapshots = testInput("Display only the final snapshot or multiple snapshots? ",
@@ -285,6 +324,19 @@ def readInput(count):
 				"Please enter an integer", 'i')
 		else:
 			numSnapshots = 0
+
+		checkList = (["yes", "no"])
+		barChoice = testInput("Set colorbar minimum and maximum? ", checkList,
+			""" Please enter "yes" or "no" """, 's')
+
+		if barChoice == "yes":
+			barMin = testInput("Enter the minimum value for the colorbar: ",
+				NameError, "Parameter is of incorrect type", 'f')
+			barMax = testInput("Enter the maximum value for the colorbar: ",
+				NameError, "Parameter is of incorrect type", 'f')
+		else:
+			barMin = 0.0
+			barMax = 0.0
 
 		checkList = (["color map", "custom colors", "map", "colors", "custom"])
 		colorChoice = testInput("Use a color map or custom colors? ", checkList, 
@@ -390,10 +442,8 @@ def readInput(count):
 		print "Invalid input"
 		sys.exit()
 
-	userInput = make_input(fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, numSnapshots, colorChoice, userColor1, userColor2, userColor3, colorMap)
+	userInput = make_input(fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, magnitude, scale, cumulative, snapshots, numSnapshots, barChoice, barMin, barMax, colorChoice, userColor1, userColor2, userColor3, colorMap)
 	return userInput
-
-	# return fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, scale, snapshots, numSnapshots, colorChoice, userColor1, userColor2, userColor3, colorMap
 
 def define_mag(userString):
 
@@ -414,11 +464,17 @@ def define_mag(userString):
 ''' Use the user input to decide which components to use for 
 	displacement plots '''
 
-# def disComponents(peak, magSelect):
-def disComponents(peak, userInput):
+def disComponents(peak, userInput, disX1, disY1, disZ1):
 
 	if userInput.magSelect == [0]:
-		peak = np.maximum(peak, np.absolute(disX1.transpose()))
+		# if userInput.magnitude == "yes" and userInput.cumulative == "yes":
+			peak = np.maximum(peak, np.absolute(disX1.transpose()))
+		# if userInput.magnitude == "yes" and userInput.cumulative == "no":
+		# 	peak = np.absolute(disX1.transpose())
+		# if userInput.magnitude == "no" and userInput.cumulative == "yes":
+		# 	peak = np.maximum(peak, disX1.transpose())
+		# if userInput.magnitude == "no" and userInput.cumulative == "no":
+		# 	peak = disX1.transpose()
 
 	if userInput.magSelect == [1]:
 		peak = np.maximum(peak, np.absolute(disY1.transpose()))
@@ -508,7 +564,6 @@ def accelComponents(peak, userInput, accelX, accelY, accelZ):
 
 ''' Set up our arrays and matrices '''
 
-# def matrices(stepAlongStrike, alongStrike, downDip, stepDownDip):
 def matrices(userInput):
 
 	y = np.array(range(0, userInput.stepAlongStrike*userInput.alongStrike, userInput.stepAlongStrike))
@@ -521,7 +576,6 @@ def matrices(userInput):
 ''' Read the binary file input by the user, take the X, Y, and Z
 	values and reshape into a matrix '''
 
-# def readFile(fp, downDip, alongStrike):
 def readFile(userInput):
 
 	dis = np.fromfile(userInput.fp, np.float64, userInput.downDip*userInput.alongStrike*3)
@@ -538,7 +592,6 @@ def readFile(userInput):
 
 ''' For velocity plots '''
 
-# def readVelocity(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1):
 def readVelocity(peak, userInput, disX1, disY1, disZ1):
 
 	disX2, disY2, disZ2 = readFile(userInput)
@@ -556,7 +609,6 @@ def readVelocity(peak, userInput, disX1, disY1, disZ1):
 
 ''' For acceleration plots '''
 
-# def readAcceleration(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1, disX2, disY2, disZ2):
 def readAcceleration(peak, userInput, disX1, disY1, disZ1, disX2, disY2, disZ2):
 
 	disX3, disY3, disZ3 = readFile(userInput)
@@ -606,14 +658,13 @@ def plot(peak, counting, userInput):
     	c(userInput.userColor2), c(userInput.userColor3), 1, 
     	c(userInput.userColor3)])
 
-	fig = plt.imshow(peak, cmap=userInput.colorMap)
+	im = plt.imshow(peak, vmin=userInput.barMin, 
+		vmax=userInput.barMax, cmap=userInput.colorMap)
 
 	plt.axis('off')
 	plt.gca().invert_yaxis()
 
-	m = cm.ScalarMappable(cmap=userInput.colorMap)
-	m.set_array(peak)
-	plt.colorbar(m)
+	plt.colorbar(im)
 	plt.xlabel('X')
 	plt.ylabel('Y')
 	plt.suptitle('t = ' + (str)((int)(i*userInput.deltaT)), fontsize=20)
@@ -653,14 +704,12 @@ for i in range(start, runtime):
 
 	if userInput.plotType == 'displacement':
 		disX1, disY1, disZ1 = readFile(userInput)
-		peak = disComponents(peak, userInput)
+		peak = disComponents(peak, userInput, disX1, disY1, disZ1)
 
 	if userInput.plotType == 'velocity':
-		# peak, disX1, disY1, disZ1 = readVelocity(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1)
 		peak, disX1, disY1, disZ1 = readVelocity(peak, userInput, disX1, disY1, disZ1)
 
 	if userInput.plotType == 'acceleration':
-		# peak, disX1, disY1, disZ1, disX2, disY2, disZ2 = readAcceleration(peak, magSelect, fp, downDip, alongStrike, disX1, disY1, disZ1, disX2, disY2, disZ2)
 		peak, disX1, disY1, disZ1, disX2, disY2, disZ2 = readAcceleration(peak, userInput, disX1, disY1, disZ1, disX2, disY2, disZ2)
 
 	if userInput.numSnapshots != 0:
