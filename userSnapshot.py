@@ -215,9 +215,12 @@ def readInput(count):
 				print "Invalid input for magSelect"
 				sys.exit()
 
-		checkList = (["yes", "no"])
-		magnitude = testInput_text(params, checkList,
-			"Invalid input for magnitude", 's')
+		if len(magSelect) == 1:
+			checkList = (["yes", "no"])
+			magnitude = testInput_text(params, checkList,
+				"Invalid input for magnitude", 's')
+		else:
+			magnitude = "yes"
 
 		checkList = (["linear", "logarithmic", "log"])
 		scale = testInput_text(params, checkList, 
@@ -303,9 +306,12 @@ def readInput(count):
 			else:
 				print "Invalid input for magSelect"
 
-		checkList = (["yes", "no"])
-		magnitude = testInput("Would you like to plot the magnitude? ",
-			checkList, """ Please enter "yes" or "no" """, 's')
+		if len(magSelect) == 1:
+			checkList = (["yes", "no"])
+			magnitude = testInput("Would you like to plot the magnitude? ",
+				checkList, """ Please enter "yes" or "no" """, 's')
+		else:
+			magnitude = "yes"
 
 		checkList = (["linear", "log", "logarithmic"])
 		scale = testInput("Plot using linear scale or logarithmic scale? ", 
@@ -461,26 +467,34 @@ def define_mag(userString):
 	result = sorted(result)
 	return result
 
+''' return the peak value based on magnitude and cumulative inputs '''
+
+def cumulativeMag(peak, userInput, matrix):
+
+	if userInput.magnitude == "yes" and userInput.cumulative == "yes":
+		peak = np.maximum(peak, np.absolute(matrix.transpose()))
+	if userInput.magnitude == "yes" and userInput.cumulative == "no":
+		peak = np.absolute(matrix.transpose())
+	if userInput.magnitude == "no" and userInput.cumulative == "yes":
+		peak = np.maximum(peak, matrix.transpose())
+	if userInput.magnitude == "no" and userInput.cumulative == "no":
+		peak = matrix.transpose()
+
+	return peak
+
 ''' Use the user input to decide which components to use for 
 	displacement plots '''
 
 def disComponents(peak, userInput, disX1, disY1, disZ1):
 
 	if userInput.magSelect == [0]:
-		# if userInput.magnitude == "yes" and userInput.cumulative == "yes":
-			peak = np.maximum(peak, np.absolute(disX1.transpose()))
-		# if userInput.magnitude == "yes" and userInput.cumulative == "no":
-		# 	peak = np.absolute(disX1.transpose())
-		# if userInput.magnitude == "no" and userInput.cumulative == "yes":
-		# 	peak = np.maximum(peak, disX1.transpose())
-		# if userInput.magnitude == "no" and userInput.cumulative == "no":
-		# 	peak = disX1.transpose()
+		peak = cumulativeMag(peak, userInput, disX1)
 
 	if userInput.magSelect == [1]:
-		peak = np.maximum(peak, np.absolute(disY1.transpose()))
+		peak = cumulativeMag(peak, userInput, disY1)
 
 	if userInput.magSelect == [2]:
-		peak = np.maximum(peak, np.absolute(disZ1.transpose()))
+		peak = cumulativeMag(peak, userInput, disZ1)
 	
 	if userInput.magSelect == [0,1]:
 		horizMag = np.sqrt(np.power(disX1, 2) + np.power(disY1, 2))
@@ -488,29 +502,29 @@ def disComponents(peak, userInput, disX1, disY1, disZ1):
 
 	if userInput.magSelect == [1,2]:
 		horizMag = np.sqrt(np.power(disY1, 2) + np.power(disZ1, 2))
-		peak = np.maximum(peak, horizMag.transpose())
+		peak = cumulativeMag(peak, userInput, horizMag)
 
 	if userInput.magSelect == [0,2]:
 		horizMag = np.sqrt(np.power(disX1, 2) + np.power(disZ1, 2))
-		peak = np.maximum(peak, horizMag.transpose())
+		peak = cumulativeMag(peak, userInput, horizMag)
 
 	if userInput.magSelect == [0,1,2]:
 		totalMag = np.sqrt(np.power(disX1, 2) + np.power(disY1, 2)
 		+ np.power(disZ1, 2))
-		peak = np.maximum(peak, totalMag.transpose())
+		peak = cumulativeMag(peak, userInput, totalMag)
 
 	return peak
 
 def velComponents(peak, userInput, velX, velY, velZ):
 
 	if userInput.magSelect == [0]:
-		peak = np.maximum(np.absolute(velX.transpose()), peak)
+		peak = peak = cumulativeMag(peak, userInput, velX)
 
 	if userInput.magSelect == [1]:
-		peak = np.maximum(np.absolute(velY.transpose()), peak)
+		peak = cumulativeMag(peak, userInput, velY)
 
 	if userInput.magSelect == [2]:
-		peak = np.maximum(np.absolute(velZ.transpose()), peak)
+		peak = cumulativeMag(peak, userInput, velZ)
 
 	if len(userInput.magSelect) == 2:
 
@@ -523,25 +537,25 @@ def velComponents(peak, userInput, velX, velY, velZ):
 		if userInput.magSelect == [0,2]:
 			horizMag = np.sqrt(np.power(velX, 2) + np.power(velZ, 2))
 
-		peak = np.maximum(peak, horizMag.transpose())
+		peak = cumulativeMag(peak, userInput, horizMag)
 
 	if userInput.magSelect == [0,1,2]:
 		totalMag = np.sqrt(np.power(velX, 2) + np.power(velY, 2)
 		+ np.power(velZ, 2))
-		peak = np.maximum(peak, totalMag.transpose())
+		peak = cumulativeMag(peak, userInput, totalMag)
 
 	return peak
 
 def accelComponents(peak, userInput, accelX, accelY, accelZ):
 
 	if userInput.magSelect == [0]:
-		peak = np.maximum(np.absolute(accelX.transpose()), peak)
+		peak = cumulativeMag(peak, userInput, accelX)
 
 	if userInput.magSelect == [1]:
-		peak = np.maximum(np.absolute(accelY.transpose()), peak)
+		peak = cumulativeMag(peak, userInput, accelY)
 
 	if userInput.magSelect == [2]:
-		peak = np.maximum(np.absolute(accelZ.transpose()), peak)
+		peak = cumulativeMag(peak, userInput, accelZ)
 
 	if len(userInput.magSelect) == 2:
 		if userInput.magSelect == [0,1]:
@@ -553,12 +567,12 @@ def accelComponents(peak, userInput, accelX, accelY, accelZ):
 		if userInput.magSelect == [0,2]:
 			horizMag = np.sqrt(np.power(accelX, 2) + np.power(accelZ, 2))
 
-		peak = np.maximum(peak, horizMag.transpose())
+		peak = cumulativeMag(peak, userInput, horizMag)
 
 	if userInput.magSelect == [0,1,2]:
 		totalMag = np.sqrt(np.power(accelX, 2) + np.power(accelY, 2)
 		+ np.power(accelZ, 2))
-		peak = np.maximum(peak, totalMag.transpose())
+		peak = cumulativeMag(peak, userInput, totalMag)
 
 	return peak
 
@@ -658,8 +672,11 @@ def plot(peak, counting, userInput):
     	c(userInput.userColor2), c(userInput.userColor3), 1, 
     	c(userInput.userColor3)])
 
-	im = plt.imshow(peak, vmin=userInput.barMin, 
-		vmax=userInput.barMax, cmap=userInput.colorMap)
+	if userInput.barChoice == "yes":
+		im = plt.imshow(peak, vmin=userInput.barMin, 
+			vmax=userInput.barMax, cmap=userInput.colorMap)
+	else:
+		im = plt.imshow(peak, cmap=userInput.colorMap)
 
 	plt.axis('off')
 	plt.gca().invert_yaxis()
