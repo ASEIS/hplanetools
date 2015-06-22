@@ -78,7 +78,7 @@ def countArguments():
 
 ''' Test the input when parameters are input by the user individually '''
 
-def testInput(request_text, error, error_message, identifier):
+def testInput(request_text, error, error_message, identifier, checkChar):
 
 	while True:
 		try:
@@ -87,9 +87,17 @@ def testInput(request_text, error, error_message, identifier):
 				break
 			if identifier == 's':
 				output = raw_input(request_text)
+				output = output.lower()
 				for i in range(len(error)):
-					if output == error[i]:
-						return output
+					if checkChar == True:
+						if output == error[i][0]:
+							return output
+						if output == error[i]:
+							output = error[i][0]
+							return output
+					else:
+						if output == error[i]:
+							return output
 				print error_message
 
 			if identifier == 'f':
@@ -103,7 +111,7 @@ def testInput(request_text, error, error_message, identifier):
 
 ''' Test the input when parameters are read from a text file '''
 
-def testInput_text(textFile, error, error_message, identifier):
+def testInput_text(textFile, error, error_message, identifier, checkChar):
 
 	try:
 		output = textFile.pop(0)
@@ -117,9 +125,17 @@ def testInput_text(textFile, error, error_message, identifier):
 			return output
 
 		if identifier == 's':
+			output = output.lower()
 			for i in range(len(error)):
-				if output == error[i]:
-					return output
+				if checkChar == True:
+					if output == error[i][0]:
+						return output
+					if output == error[i]:
+						output = error[i][0]
+						return output
+				else:
+					if output == error[i]:
+						return output
 			print error_message
 			sys.exit()
 
@@ -129,7 +145,7 @@ def testInput_text(textFile, error, error_message, identifier):
 
 ''' Test the input when parameters are read from the terminal '''
 
-def testInput_terminal(error, error_message, identifier, inputCount):
+def testInput_terminal(error, error_message, identifier, inputCount, checkChar):
 
 	try:
 		output = sys.argv[inputCount]
@@ -141,9 +157,17 @@ def testInput_terminal(error, error_message, identifier, inputCount):
 			output = float(output)
 
 		if identifier == 's':
+			output = output.lower()
 			for i in range(len(error)):
-				if output == error[i]:
-					return output
+				if checkChar == True:
+					if output == error[i][0]:
+						return output
+					if output == error[i]:
+						output = error[i][0]
+						return output
+				else:
+					if output == error[i]:
+						return output
 			print error_message
 			sys.exit()
 
@@ -186,28 +210,29 @@ def readInput(count):
 
 		checkList = (["displacement", "velocity", "acceleration"])
 		plotType = testInput_text(params, checkList, 
-			"Invalid input for plotType", 's')
+			"Invalid input for plotType", 's', True)
 
 		deltaT = testInput_text(params, ValueError, 
-			"Parameter deltaT is of incorrect type", 'f')
+			"Parameter deltaT is of incorrect type", 'f', False)
 
 		simulationTime = testInput_text(params, ValueError,
-			"Parameter simulationTime is of incorrect type", 'i')
+			"Parameter simulationTime is of incorrect type", 'i', False)
 
 		alongStrike = testInput_text(params, ValueError, 
-			"Parameter alongStrike is of incorrect type", 'i')
+			"Parameter alongStrike is of incorrect type", 'i', False)
 
 		downDip = testInput_text(params, ValueError, 
-			"Parameter downDip is of incorrect type", 'i')
+			"Parameter downDip is of incorrect type", 'i', False)
 
 		stepAlongStrike = testInput_text(params, ValueError, 
-			"Parameter stepAlongStrike is of incorrect type", 'i')
+			"Parameter stepAlongStrike is of incorrect type", 'i', False)
 
 		stepDownDip = testInput_text(params, ValueError, 
-			"Parameter stepDownDip is of incorrect type", 'i')
+			"Parameter stepDownDip is of incorrect type", 'i', False)
 
 		while True:
 			magSelect = params.pop(0)
+			magSelect = magSelect.lower()
 			if 'x' in magSelect or 'y' in magSelect or 'z' in magSelect:
 				magSelect = define_mag(magSelect)
 				break
@@ -218,37 +243,37 @@ def readInput(count):
 		if len(magSelect) == 1:
 			checkList = (["yes", "no"])
 			magnitude = testInput_text(params, checkList,
-				"Invalid input for magnitude", 's')
+				"Invalid input for magnitude", 's', True)
 		else:
-			magnitude = "yes"
+			magnitude = "y"
 
 		checkList = (["linear", "logarithmic", "log"])
 		scale = testInput_text(params, checkList, 
-			"Invalid input for plotType", 's')
+			"Invalid input for plotType", 's', False)
 
 		checkList = (["yes", "no"])
 		cumulative = testInput_text(params, checkList,
-			"Invalid input for cumulative", 's')
+			"Invalid input for cumulative", 's', True)
 
 		checkList = (["final", "multiple"])
 		snapshots = testInput_text(params, checkList,
-			"Invalid input for snapshots", 's')
+			"Invalid input for snapshots", 's', True)
 
 		if snapshots == "multiple":
 			numSnapshots = testInput_text(params, ValueError,
-				"Parameter numSnapshots is of incorrect type", 'i')
+				"Parameter numSnapshots is of incorrect type", 'i', False)
 		else:
 			numSnapshots = 0
 
 		checkList = (["yes", "no"])
 		barChoice = testInput_text(params, checkList,
-			"Invalid input for barChoice", 's')
+			"Invalid input for barChoice", 's', True)
 
 		if barChoice == "yes":
 			barMin = testInput_text(params, ValueError,
-				"Parameter barMin is of incorrect type", 'f')
+				"Parameter barMin is of incorrect type", 'f', False)
 			barMax = testInput_text(params, ValueError,
-				"Parameter barMax is of incorrect type", 'f')
+				"Parameter barMax is of incorrect type", 'f', False)
 		else:
 			barMin = 0.0
 			barMax = 0.0
@@ -278,28 +303,29 @@ def readInput(count):
 
 	 	checkList = (["displacement", "velocity", "acceleration"])
 		plotType = testInput("displacement, velocity, or acceleration plot? ", checkList,
-			"Invalid input for plotType", 's')
+			"Invalid input for plotType", 's', True)
 
 		deltaT = testInput("Enter a value for deltaT: ", NameError, 
-			"Parameter is of incorrect type", 'f')
+			"Parameter is of incorrect type", 'f', False)
 
 		simulationTime = testInput("Enter a value for the simulationTime: ", 
-			NameError, "Parameter is of incorrect type", 'i')
+			NameError, "Parameter is of incorrect type", 'i', False)
 
 		alongStrike = testInput("Enter an integer value for alongStrike: ",
-			NameError, "Parameter is of incorrect type", 'i')
+			NameError, "Parameter is of incorrect type", 'i', False)
 
 		downDip = testInput("Enter an integer value for downDip: ",
-			NameError, "Parameter is of incorrect type", 'i')
+			NameError, "Parameter is of incorrect type", 'i', False)
 
 		stepAlongStrike = testInput("Enter an integer value for stepAlongStrike: ",
-			NameError, "Parameter is of incorrect type", 'i')
+			NameError, "Parameter is of incorrect type", 'i', False)
 
 		stepDownDip = testInput("Enter an integer value for stepDownDip: ",
-			NameError, "Parameter is of incorrect type", 'i')
+			NameError, "Parameter is of incorrect type", 'i', False)
 
 		while True:
 			magSelect = raw_input("Enter the axis to plot: ")
+			magSelect = magSelect.lower()
 			if 'x' in magSelect or 'y' in magSelect or 'z' in magSelect:
 				magSelect = define_mag(magSelect)
 				break
@@ -309,44 +335,44 @@ def readInput(count):
 		if len(magSelect) == 1:
 			checkList = (["yes", "no"])
 			magnitude = testInput("Would you like to plot the magnitude? ",
-				checkList, """ Please enter "yes" or "no" """, 's')
+				checkList, """ Please enter "yes" or "no" """, 's', True)
 		else:
-			magnitude = "yes"
+			magnitude = "y"
 
 		checkList = (["linear", "log", "logarithmic"])
 		scale = testInput("Plot using linear scale or logarithmic scale? ", 
-			checkList, """ Please enter "linear" or logarithmic """, 's')
+			checkList, """ Please enter "linear" or logarithmic """, 's', False)
 
 		checkList = (["yes", "no"])
 		cumulative = testInput("Is this a cumulative plot? ", checkList,
-			""" Please enter "yes" or "no" """, 's')
+			""" Please enter "yes" or "no" """, 's', True)
 
 		checkList = (["final", "multiple"])
 		snapshots = testInput("Display only the final snapshot or multiple snapshots? ",
-			checkList, """Please enter "final" or "multiple" """, 's')
+			checkList, """Please enter "final" or "multiple" """, 's', True)
 
 		if snapshots == "multiple":
 			numSnapshots = testInput("How many snapshots to take? ", checkList,
-				"Please enter an integer", 'i')
+				"Please enter an integer", 'i', False)
 		else:
 			numSnapshots = 0
 
 		checkList = (["yes", "no"])
 		barChoice = testInput("Set colorbar minimum and maximum? ", checkList,
-			""" Please enter "yes" or "no" """, 's')
+			""" Please enter "yes" or "no" """, 's', True)
 
-		if barChoice == "yes":
+		if barChoice == "yes" or barChoice == "y":
 			barMin = testInput("Enter the minimum value for the colorbar: ",
-				NameError, "Parameter is of incorrect type", 'f')
+				NameError, "Parameter is of incorrect type", 'f', False)
 			barMax = testInput("Enter the maximum value for the colorbar: ",
-				NameError, "Parameter is of incorrect type", 'f')
+				NameError, "Parameter is of incorrect type", 'f', False)
 		else:
 			barMin = 0.0
 			barMax = 0.0
 
 		checkList = (["color map", "custom colors", "map", "colors", "custom"])
 		colorChoice = testInput("Use a color map or custom colors? ", checkList, 
-			""" Please enter "map" or "custom" """, 's')
+			""" Please enter "map" or "custom" """, 's', False)
 
 		if colorChoice == 'map' or colorChoice == 'color map':
 			colorMap = raw_input("Enter the colormap for the plot: ")
@@ -372,28 +398,29 @@ def readInput(count):
 
 		checkList = (["displacement", "velocity", "acceleration"])
 		plotType = testInput_terminal(checkList, 
-			"Invalid input for plotType", 's', 2)
+			"Invalid input for plotType", 's', 2, True)
 
 		deltaT = testInput_terminal(ValueError, 
-			"deltaT is of incorrect type", 'f', 3)
+			"deltaT is of incorrect type", 'f', 3, False)
 
 		simulationTime = testInput_terminal(ValueError,
-			"simulationTime is of incorrect type", 'i', 4)
+			"simulationTime is of incorrect type", 'i', 4, False)
 
 		alongStrike = testInput_terminal(ValueError, 
-			"alongStrike is of incorrect type", 'i', 5)
+			"alongStrike is of incorrect type", 'i', 5, False)
 
 		downDip = testInput_terminal(ValueError,
-			"downDip is of incorrect type", 'i', 6)
+			"downDip is of incorrect type", 'i', 6, False)
 
 		stepAlongStrike = testInput_terminal(ValueError,
-			"stepAlongStrike is of incorrect type", 'i', 7)
+			"stepAlongStrike is of incorrect type", 'i', 7, False)
 
 		stepDownDip = testInput_terminal(ValueError,
-			"stepDownDip is of incorrect type", 'i', 8)
+			"stepDownDip is of incorrect type", 'i', 8, False)
 
 		while True:
 			magSelect = sys.argv[9]
+			magSelect = magSelect.lower()
 			if 'x' in magSelect or 'y' in magSelect or 'z' in magSelect:
 				magSelect = define_mag(magSelect)
 				break
@@ -403,26 +430,26 @@ def readInput(count):
 
 		checkList = (["linear", "log", "logarithmic"])
 		scale = testInput_terminal(checkList, 
-			""" Please enter "linear" or logarithmic """, 's', 10)
+			""" Please enter "linear" or logarithmic """, 's', 10, False)
 
 		checkList = (["final", "multiple"])
 		snapshots = testInput_terminal(checkList, 
-			""" Please enter "final" or "multiple" """, 's', 11)
+			""" Please enter "final" or "multiple" """, 's', 11, True)
 
 		if snapshots == "multiple":
 			numSnapshots = testInput_terminal(params, ValueError,
-				"Parameter numSnapshots is of incorrect type", 'i', 12)
+				"Parameter numSnapshots is of incorrect type", 'i', 12, False)
 		else:
 			numSnapshots = 0
 
 		if snapshots == "multiple":
 			checkList = (["color map", "custom colors", "map", "colors", "custom"])
 			colorChoice = testInput_terminal(checkList, 
-				""" Please enter "map" or "custom" """, 's', 13)
+				""" Please enter "map" or "custom" """, 's', 13, False)
 		else:
 			checkList = (["color map", "custom colors", "map", "colors", "custom"])
 			colorChoice = testInput_terminal(checkList, 
-				""" Please enter "map" or "custom" """, 's', 12)
+				""" Please enter "map" or "custom" """, 's', 12, False)
 
 		if colorChoice == 'map' or colorChoice == 'colormap':
 			if snapshots == "multiple":
@@ -471,13 +498,13 @@ def define_mag(userString):
 
 def cumulativeMag(peak, userInput, matrix):
 
-	if userInput.magnitude == "yes" and userInput.cumulative == "yes":
+	if userInput.magnitude == "y" and userInput.cumulative == "y":
 		peak = np.maximum(peak, np.absolute(matrix.transpose()))
-	if userInput.magnitude == "yes" and userInput.cumulative == "no":
+	if userInput.magnitude == "y" and userInput.cumulative == "n":
 		peak = np.absolute(matrix.transpose())
-	if userInput.magnitude == "no" and userInput.cumulative == "yes":
+	if userInput.magnitude == "n" and userInput.cumulative == "y":
 		peak = np.maximum(peak, matrix.transpose())
-	if userInput.magnitude == "no" and userInput.cumulative == "no":
+	if userInput.magnitude == "n" and userInput.cumulative == "n":
 		peak = matrix.transpose()
 
 	return peak
@@ -672,7 +699,7 @@ def plot(peak, counting, userInput):
     	c(userInput.userColor2), c(userInput.userColor3), 1, 
     	c(userInput.userColor3)])
 
-	if userInput.barChoice == "yes":
+	if userInput.barChoice == "y":
 		im = plt.imshow(peak, vmin=userInput.barMin, 
 			vmax=userInput.barMax, cmap=userInput.colorMap)
 	else:
@@ -687,11 +714,11 @@ def plot(peak, counting, userInput):
 	plt.suptitle('t = ' + (str)((int)(i*userInput.deltaT)), fontsize=20)
 	plt.axis('scaled')
 
-	if userInput.plotType == 'displacement':
+	if userInput.plotType == 'd':
 		plt.savefig("displacement" + str(counting) + ".png")
-	if userInput.plotType == 'velocity':
+	if userInput.plotType == 'v':
 		plt.savefig("velocity" + str(counting) + ".png")
-	if userInput.plotType == 'acceleration':
+	if userInput.plotType == 'a':
 		plt.savefig("acceleration" + str(counting) + ".png")
 
 	plt.show()
@@ -704,14 +731,14 @@ userInput = readInput(count)
 iterations = int(userInput.simulationTime/userInput.deltaT)
 runtime = iterations-1
 
-if userInput.plotType == 'displacement':
+if userInput.plotType == 'd':
 	start = 0
-if userInput.plotType == 'velocity':
+if userInput.plotType == 'v':
 	start = 1
 
-if userInput.plotType == 'velocity' or userInput.plotType == 'acceleration':
+if userInput.plotType == 'v' or userInput.plotType == 'a':
 	disX1, disY1, disZ1 = readFile(userInput)
-	if userInput.plotType == 'acceleration':
+	if userInput.plotType == 'a':
 		disX2, disY2, disZ2 = readFile(userInput)
 		start = 2
 
@@ -719,14 +746,14 @@ peak = matrices(userInput)
 
 for i in range(start, runtime):
 
-	if userInput.plotType == 'displacement':
+	if userInput.plotType == 'd':
 		disX1, disY1, disZ1 = readFile(userInput)
 		peak = disComponents(peak, userInput, disX1, disY1, disZ1)
 
-	if userInput.plotType == 'velocity':
+	if userInput.plotType == 'v':
 		peak, disX1, disY1, disZ1 = readVelocity(peak, userInput, disX1, disY1, disZ1)
 
-	if userInput.plotType == 'acceleration':
+	if userInput.plotType == 'a':
 		peak, disX1, disY1, disZ1, disX2, disY2, disZ2 = readAcceleration(peak, userInput, disX1, disY1, disZ1, disX2, disY2, disZ2)
 
 	if userInput.numSnapshots != 0:
