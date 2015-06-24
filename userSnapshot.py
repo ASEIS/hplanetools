@@ -739,11 +739,11 @@ for i in range(start, runtime):
     if userInput.numSnapshots != 0:
         counting = createSnapshots(runtime, peak, counting, userInput)
 
-    # percent = float(i)/runtime
-    # hashes = '#'*int(round(percent*20))
-    # spaces = ' '*(20-len(hashes))
-    # sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
-    # sys.stdout.flush()
+    percent = float(i)/runtime
+    hashes = '#'*int(round(percent*20))
+    spaces = ' '*(20-len(hashes))
+    sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
+    sys.stdout.flush()
 
 if userInput.numSnapshots == 0:
     plot(peak, counting, userInput)
