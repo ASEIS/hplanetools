@@ -246,7 +246,7 @@ def getInput(count, userInput):
         checkList, """Please enter "final" or "multiple" """, 's', True)
 
     if snapshots == "m":
-        numSnapshots = testInput("How many snapshots to take? ", checkList,
+        numSnapshots = testInput("How many seconds between snapshots? ", checkList,
             "Please enter an integer", 'i', False)
     else:
         numSnapshots = 0
@@ -368,7 +368,7 @@ def readInput(count):
         snapshots = testInput_text(params, checkList,
             "Invalid input for snapshots", 's', True)
 
-        if snapshots == "multiple":
+        if snapshots == "m":
             numSnapshots = testInput_text(params, ValueError,
                 "Parameter numSnapshots is of incorrect type", 'i', False)
         else:
@@ -661,7 +661,7 @@ def make_colormap(seq):
 def createSnapshots(time, peak, counting, userInput):
 
     if i > 1:
-        if i%(time/userInput.numSnapshots) == 0:
+        if (i*userInput.deltaT)%userInput.numSnapshots == 0:
             counting = plot(peak, counting, userInput)
 
     return counting
@@ -739,11 +739,11 @@ for i in range(start, runtime):
     if userInput.numSnapshots != 0:
         counting = createSnapshots(runtime, peak, counting, userInput)
 
-    percent = float(i)/runtime
-    hashes = '#'*int(round(percent*20))
-    spaces = ' '*(20-len(hashes))
-    sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
-    sys.stdout.flush()
+    # percent = float(i)/runtime
+    # hashes = '#'*int(round(percent*20))
+    # spaces = ' '*(20-len(hashes))
+    # sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
+    # sys.stdout.flush()
 
 if userInput.numSnapshots == 0:
     plot(peak, counting, userInput)
