@@ -666,6 +666,51 @@ def createSnapshots(time, peak, counting, userInput):
 
     return counting
 
+def outputFile(peak, userInput):
+
+    xCount = 0
+    yCount = 0
+    currStepAlong = 0
+    currStepDown = 0
+
+    theOutput = open("output.txt", 'w')
+    theOutput.write("X \t\t Y \t\t Z \n")
+    shape = peak.shape
+    horizLen = shape[0]
+    vertLen = shape[1]
+    peak = peak.tolist()
+
+    X = peak[::3]
+    Y = peak[1::3]
+    Z = peak[2::3]
+
+    sASOriginal = userInput.stepAlongStrike
+    sDDOriginal = userInput.stepDownDip
+
+    for y in Y:
+
+        theOutput.write(str(currStepAlong) + "\t\t" 
+            + str(currStepDown) + "\r")
+
+        # for x in X:  
+        for i in range(0, len(Z)):
+            for z in range(0, len(Z[i])):
+
+                currStepAlong = currStepAlong+sASOriginal
+                theOutput.write(str(currStepAlong) + "\t\t" + 
+                    str(currStepDown) + "\t\t" + str(Z[i][z]) + "\n")
+                xCount = xCount + 1
+                if xCount == horizLen:
+                    break
+
+        currStepDown = currStepDown+sDDOriginal
+        yCount = yCount + 1
+        if yCount == vertLen:
+            break
+        currStepAlong = 0
+        xCount = 0
+
+
 ''' Create the plot '''
 
 def plot(peak, counting, userInput):
@@ -747,3 +792,5 @@ for i in range(start, runtime):
 
 if userInput.numSnapshots == 0:
     plot(peak, counting, userInput)
+
+outputFile(peak, userInput)
