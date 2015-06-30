@@ -5,8 +5,9 @@ import sys
 import array
 import time
 import math
+import pylab
 from mpl_toolkits.mplot3d import proj3d
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 import matplotlib.mlab as ml
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
@@ -608,7 +609,6 @@ def readFile(userInput):
     disX = np.reshape(X, (userInput.downDip, userInput.alongStrike), order='F')
     disY = np.reshape(Y, (userInput.downDip, userInput.alongStrike), order='F')
     disZ = np.reshape(Z, (userInput.downDip, userInput.alongStrike), order='F')
-
     return disX, disY, disZ
 
 ''' For velocity plots '''
@@ -668,8 +668,7 @@ def createSnapshots(time, peak, counting, userInput):
 
 def outputFile(peak, userInput):
 
-    xCount = 0
-    yCount = 0
+    rowCount = 0
     currStepAlong = 0
     currStepDown = 0
 
@@ -684,31 +683,25 @@ def outputFile(peak, userInput):
     Y = peak[1::3]
     Z = peak[2::3]
 
-    sASOriginal = userInput.stepAlongStrike
-    sDDOriginal = userInput.stepDownDip
-
-    for y in Y:
-
-        theOutput.write(str(currStepAlong) + "\t\t" 
-            + str(currStepDown) + "\r")
-
-        # for x in X:  
+    while rowCount < (horizLen*vertLen):
         for i in range(0, len(Z)):
-            for z in range(0, len(Z[i])):
 
-                currStepAlong = currStepAlong+sASOriginal
+            theOutput.write(str(currStepAlong) + "\t\t" 
+            + str(currStepDown) + "\t\t" + str(Z[i][0]) + "\n")
+
+            for z in range(1, len(Z[i])):
+                currStepAlong = currStepAlong+userInput.stepAlongStrike
                 theOutput.write(str(currStepAlong) + "\t\t" + 
-                    str(currStepDown) + "\t\t" + str(Z[i][z]) + "\n")
-                xCount = xCount + 1
-                if xCount == horizLen:
+                   str(currStepDown) + "\t\t" + str(Z[i][z]) + "\n")
+                rowCount = rowCount + 1
+                if rowCount >= (horizLen*vertLen):
                     break
 
-        currStepDown = currStepDown+sDDOriginal
-        yCount = yCount + 1
-        if yCount == vertLen:
-            break
-        currStepAlong = 0
-        xCount = 0
+            currStepDown = currStepDown+userInput.stepDownDip
+            rowCount = rowCount + 1
+            currStepAlong = 0
+            if rowCount >= (horizLen*vertLen):
+                break
 
 
 ''' Create the plot '''
