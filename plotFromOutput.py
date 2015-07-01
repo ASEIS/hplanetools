@@ -49,16 +49,25 @@ alongStrike = testInput("Enter an integer value for alongStrike: ",
 downDip = testInput("Enter an integer value for downDip: ",
 	NameError, "Parameter is of incorrect type", 'i', False)
 
-fig = plt.subplots()
-data = np.fromfile(fp, dtype=np.float64, count=alongStrike*downDip*3)
-data.resize(alongStrike, downDip)
 
+data = []
+readFile = fp.read()
+
+getNumbers = readFile.split(" ")
+
+for i in range(0, len(getNumbers)):
+	data.append(getNumbers[i])
+
+data = np.resize(data, [alongStrike, downDip])
+data = data.astype(np.float)
+
+im = plt.imshow(data, cmap="seismic")
 plt.axis('off')
 plt.gca().invert_yaxis()
+
+plt.colorbar(im)
 plt.xlabel('X')
 plt.ylabel('Y')
-im = plt.imshow(data, cmap="seismic")
-plt.colorbar(im)
 plt.axis('scaled')
 plt.savefig("output.png")
 

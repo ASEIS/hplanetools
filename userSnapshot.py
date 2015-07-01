@@ -673,33 +673,26 @@ def outputFile(peak, userInput):
     currStepDown = 0
 
     theOutput = open("output.txt", 'w')
-    theOutput.write("X \t\t Y \t\t Z \n")
+    # theOutput.write("X \t\t Y \t\t Z \n")
     shape = peak.shape
     horizLen = shape[0]
     vertLen = shape[1]
     peak = peak.tolist()
+    newPeak = []
 
-    X = peak[::3]
-    Y = peak[1::3]
-    Z = peak[2::3]
+    for i in range(0, len(peak)):
+        for j in range(0, len(peak[i])):
+            newPeak.append(peak[i][j])
+
+    X = newPeak[::3]
+    Y = newPeak[1::3]
+    Z = newPeak[2::3]
 
     while rowCount < (horizLen*vertLen):
         for i in range(0, len(Z)):
-
-            theOutput.write(str(currStepAlong) + "\t\t" 
-            + str(currStepDown) + "\t\t" + str(Z[i][0]) + "\n")
-
-            for z in range(1, len(Z[i])):
-                currStepAlong = currStepAlong+userInput.stepAlongStrike
-                theOutput.write(str(currStepAlong) + "\t\t" + 
-                   str(currStepDown) + "\t\t" + str(Z[i][z]) + "\n")
-                rowCount = rowCount + 1
-                if rowCount >= (horizLen*vertLen):
-                    break
-
-            currStepDown = currStepDown+userInput.stepDownDip
+            theOutput.write(str(X[i]) + " " 
+            + str(Y[i]) + " " + str(Z[i]) + " ")
             rowCount = rowCount + 1
-            currStepAlong = 0
             if rowCount >= (horizLen*vertLen):
                 break
 
