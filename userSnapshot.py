@@ -1,5 +1,8 @@
 #!/usr/bin/env python
-
+# ==========================================================================
+# The program is to .....
+#
+# ==========================================================================
 import numpy as np
 import sys
 import array
@@ -37,7 +40,8 @@ class Input(object):
     userColor3 = ""
     colorMap = ""
 
-    def __init__(self, fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, magnitude, scale, cumulative, snapshots, numSnapshots, barChoice, barMin, barMax, colorChoice, userColor1, userColor2, userColor3, colorMap):
+    def __init__(self, fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect,
+        magnitude, scale, cumulative, snapshots, numSnapshots, barChoice, barMin, barMax, colorChoice, userColor1, userColor2, userColor3, colorMap):
         self.fp = fp
         self.plotType = plotType
         self.deltaT = deltaT
@@ -60,14 +64,17 @@ class Input(object):
         self.userColor2 = userColor2
         self.userColor3 = userColor3
         self.colorMap = colorMap
+# end of input
 
-def make_input(fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, magnitude, scale, cumulative, snapshots, numSnapshots, barChoice, barMin, barMax, colorChoice, userColor1, userColor2, userColor3, colorMap):
-    input = Input(fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, magnitude, scale, cumulative, snapshots, numSnapshots, barChoice, barMin, barMax, colorChoice, userColor1, userColor2, userColor3, colorMap)
+def make_input(fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect,
+    magnitude, scale, cumulative, snapshots, numSnapshots, barChoice, barMin, barMax, colorChoice, userColor1, userColor2, userColor3, colorMap):
+    input = Input(fp, plotType, deltaT, simulationTime, alongStrike, downDip, stepAlongStrike, stepDownDip, magSelect, magnitude, scale,
+        cumulative, snapshots, numSnapshots, barChoice, barMin, barMax, colorChoice, userColor1, userColor2, userColor3, colorMap)
     return input
 
-''' Check how many arguments the user inputs '''
-
 def countArguments():
+    ''' Check how many arguments the user inputs '''
+    # count = len(sys.argv)
     count = 0
     for i in range(0, 10000):
         try:
@@ -77,9 +84,9 @@ def countArguments():
             break
     return count
 
-''' Test the input when parameters are input by the user individually '''
 
 def testInput(request_text, error, error_message, identifier, checkChar):
+    ''' Test the input when parameters are input by the user individually '''
 
     while True:
         try:
@@ -193,10 +200,10 @@ def getInput(count, userInput):
         plotType = testInput("displacement, velocity, or acceleration plot? ", checkList,
              "Invalid input for plotType", 's', True)
 
-        deltaT = testInput("Enter a value for deltaT: ", NameError, 
+        deltaT = testInput("Enter a value for deltaT: ", NameError,
             "Parameter is of incorrect type", 'f', False)
 
-        simulationTime = testInput("Enter a value for the simulationTime: ", 
+        simulationTime = testInput("Enter a value for the simulationTime: ",
             NameError, "Parameter is of incorrect type", 'i', False)
 
         alongStrike = testInput("Enter an integer value for alongStrike: ",
@@ -226,7 +233,7 @@ def getInput(count, userInput):
                 checkList, """ Please enter "yes" or "no" """, 's', True)
         else:
             magnitude = "y"
-            
+
     if len(userInput.magSelect) == 1:
         checkList = (["yes", "no"])
         magnitude = testInput("Would you like to plot the magnitude? ",
@@ -235,7 +242,7 @@ def getInput(count, userInput):
         magnitude = "y"
 
     checkList = (["linear", "log", "logarithmic"])
-    scale = testInput("Plot using linear scale or logarithmic scale? ", 
+    scale = testInput("Plot using linear scale or logarithmic scale? ",
         checkList, """ Please enter "linear" or logarithmic """, 's', False)
 
     checkList = (["yes", "no"])
@@ -266,7 +273,7 @@ def getInput(count, userInput):
         barMax = 0.0
 
     checkList = (["color map", "custom colors", "map", "colors", "custom"])
-    colorChoice = testInput("Use a color map or custom colors? ", checkList, 
+    colorChoice = testInput("Use a color map or custom colors? ", checkList,
         """ Please enter "map" or "custom" """, 's', False)
 
     if colorChoice == 'map' or colorChoice == 'color map':
@@ -314,30 +321,30 @@ def readInput(count):
                 binaryFile = params.pop(0)
                 fp = open(binaryFile, 'r')
                 break
-            except IOError: 
+            except IOError:
                 print "Binary file not found"
                 sys.exit
 
         checkList = (["displacement", "velocity", "acceleration"])
-        plotType = testInput_text(params, checkList, 
+        plotType = testInput_text(params, checkList,
             "Invalid input for plotType", 's', True)
 
-        deltaT = testInput_text(params, ValueError, 
+        deltaT = testInput_text(params, ValueError,
             "Parameter deltaT is of incorrect type", 'f', False)
 
         simulationTime = testInput_text(params, ValueError,
             "Parameter simulationTime is of incorrect type", 'i', False)
 
-        alongStrike = testInput_text(params, ValueError, 
+        alongStrike = testInput_text(params, ValueError,
             "Parameter alongStrike is of incorrect type", 'i', False)
 
-        downDip = testInput_text(params, ValueError, 
+        downDip = testInput_text(params, ValueError,
             "Parameter downDip is of incorrect type", 'i', False)
 
-        stepAlongStrike = testInput_text(params, ValueError, 
+        stepAlongStrike = testInput_text(params, ValueError,
             "Parameter stepAlongStrike is of incorrect type", 'i', False)
 
-        stepDownDip = testInput_text(params, ValueError, 
+        stepDownDip = testInput_text(params, ValueError,
             "Parameter stepDownDip is of incorrect type", 'i', False)
 
         while True:
@@ -358,7 +365,7 @@ def readInput(count):
             magnitude = "y"
 
         checkList = (["linear", "logarithmic", "log"])
-        scale = testInput_text(params, checkList, 
+        scale = testInput_text(params, checkList,
             "Invalid input for plotType", 's', False)
 
         checkList = (["yes", "no"])
@@ -419,16 +426,16 @@ def readInput(count):
                 sys.exit()
 
         checkList = (["displacement", "velocity", "acceleration"])
-        plotType = testInput_terminal(checkList, 
+        plotType = testInput_terminal(checkList,
             "Invalid input for plotType", 's', 2, True)
 
-        deltaT = testInput_terminal(ValueError, 
+        deltaT = testInput_terminal(ValueError,
             "deltaT is of incorrect type", 'f', 3, False)
 
         simulationTime = testInput_terminal(ValueError,
             "simulationTime is of incorrect type", 'i', 4, False)
 
-        alongStrike = testInput_terminal(ValueError, 
+        alongStrike = testInput_terminal(ValueError,
             "alongStrike is of incorrect type", 'i', 5, False)
 
         downDip = testInput_terminal(ValueError,
@@ -490,7 +497,7 @@ def cumulativeMag(peak, userInput, matrix):
 
     return peak
 
-''' Use the user input to decide which components to use for 
+''' Use the user input to decide which components to use for
     displacement plots '''
 
 def disComponents(peak, userInput, disX1, disY1, disZ1):
@@ -503,7 +510,7 @@ def disComponents(peak, userInput, disX1, disY1, disZ1):
 
     if userInput.magSelect == [2]:
         peak = cumulativeMag(peak, userInput, disZ1)
-    
+
     if userInput.magSelect == [0,1]:
         horizMag = np.sqrt(np.power(disX1, 2) + np.power(disY1, 2))
         peak = np.maximum(peak, horizMag.transpose())
@@ -690,7 +697,7 @@ def outputFile(peak, userInput):
 
     while rowCount < (horizLen*vertLen):
         for i in range(0, len(Z)):
-            theOutput.write(str(X[i]) + " " 
+            theOutput.write(str(X[i]) + " "
             + str(Y[i]) + " " + str(Z[i]) + " ")
             rowCount = rowCount + 1
             if rowCount >= (horizLen*vertLen):
@@ -706,12 +713,12 @@ def plot(peak, counting, userInput):
     if userInput.colorChoice == 'colors' or userInput.colorChoice == 'custom colors' or userInput.colorChoice == 'custom':
         c = colors.ColorConverter().to_rgb
         userInput.colorMap = make_colormap(
-        [c(userInput.userColor1), c(userInput.userColor2), 0.5, 
-        c(userInput.userColor2), c(userInput.userColor3), 1, 
+        [c(userInput.userColor1), c(userInput.userColor2), 0.5,
+        c(userInput.userColor2), c(userInput.userColor3), 1,
         c(userInput.userColor3)])
 
     if userInput.barChoice == "y":
-        im = plt.imshow(peak, vmin=userInput.barMin, 
+        im = plt.imshow(peak, vmin=userInput.barMin,
             vmax=userInput.barMax, cmap=userInput.colorMap)
     else:
         im = plt.imshow(peak, cmap=userInput.colorMap)
@@ -734,49 +741,53 @@ def plot(peak, counting, userInput):
 
     plt.show()
     return counting
+# end of plot
 
-counting = 0
-count = countArguments()
-userInput = readInput(count)
+if __name__ == "__main__":
+    counting = 0
+    count = countArguments()
+    userInput = readInput(count)
 
-iterations = int(userInput.simulationTime/userInput.deltaT)
-runtime = iterations-1
+    iterations = int(userInput.simulationTime/userInput.deltaT)
+    runtime = iterations-1
 
-if userInput.plotType == 'd':
-    start = 0
-if userInput.plotType == 'v':
-    start = 1
-
-if userInput.plotType == 'v' or userInput.plotType == 'a':
-    disX1, disY1, disZ1 = readFile(userInput)
-    if userInput.plotType == 'a':
-        disX2, disY2, disZ2 = readFile(userInput)
-        start = 2
-
-peak = matrices(userInput)
-
-for i in range(start, runtime):
-
+    # plot displacement
     if userInput.plotType == 'd':
-        disX1, disY1, disZ1 = readFile(userInput)
-        peak = disComponents(peak, userInput, disX1, disY1, disZ1)
-
+        start = 0
+    # plot velocity
     if userInput.plotType == 'v':
-        peak, disX1, disY1, disZ1 = readVelocity(peak, userInput, disX1, disY1, disZ1)
+        start = 1
 
-    if userInput.plotType == 'a':
-        peak, disX1, disY1, disZ1, disX2, disY2, disZ2 = readAcceleration(peak, userInput, disX1, disY1, disZ1, disX2, disY2, disZ2)
+    if userInput.plotType == 'v' or userInput.plotType == 'a':
+        disX1, disY1, disZ1 = readFile(userInput)
+        if userInput.plotType == 'a':
+            disX2, disY2, disZ2 = readFile(userInput)
+            start = 2
 
-    if userInput.numSnapshots != 0:
-        counting = createSnapshots(runtime, peak, counting, userInput)
+    peak = matrices(userInput)
 
-    percent = float(i)/runtime
-    hashes = '#'*int(round(percent*20))
-    spaces = ' '*(20-len(hashes))
-    sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
-    sys.stdout.flush()
+    for i in range(start, runtime):
 
-if userInput.numSnapshots == 0:
-    plot(peak, counting, userInput)
+        if userInput.plotType == 'd':
+            disX1, disY1, disZ1 = readFile(userInput)
+            peak = disComponents(peak, userInput, disX1, disY1, disZ1)
 
-outputFile(peak, userInput)
+        if userInput.plotType == 'v':
+            peak, disX1, disY1, disZ1 = readVelocity(peak, userInput, disX1, disY1, disZ1)
+
+        if userInput.plotType == 'a':
+            peak, disX1, disY1, disZ1, disX2, disY2, disZ2 = readAcceleration(peak, userInput, disX1, disY1, disZ1, disX2, disY2, disZ2)
+
+        if userInput.numSnapshots != 0:
+            counting = createSnapshots(runtime, peak, counting, userInput)
+
+        percent = float(i)/runtime
+        hashes = '#'*int(round(percent*20))
+        spaces = ' '*(20-len(hashes))
+        sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
+        sys.stdout.flush()
+
+    if userInput.numSnapshots == 0:
+        plot(peak, counting, userInput)
+
+    outputFile(peak, userInput)
