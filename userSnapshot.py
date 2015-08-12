@@ -608,7 +608,6 @@ def matrices(userInput):
 def readFile(userInput):
 
     dis = np.fromfile(userInput.fp, np.float64, userInput.downDip*userInput.alongStrike*3)
-
     X = dis[::3] #take every third element starting at index 0
     Y = dis[1::3] #...starting at index 1
     Z = dis[2::3] #...starting at index 2
@@ -781,6 +780,7 @@ if __name__ == "__main__":
         if userInput.numSnapshots != 0:
             counting = createSnapshots(runtime, peak, counting, userInput)
 
+        # showing progress on terminal
         percent = float(i)/runtime
         hashes = '#'*int(round(percent*20))
         spaces = ' '*(20-len(hashes))
