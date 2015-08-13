@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab as ml
 
-def disComponents(magSelect, disX, disY, disZ):
+def components(magSelect, disX, disY, disZ):
 	"""decide components to use for displacement plotting"""
 	magDic = {0: disX, 1: disY, 2: disZ}
 	if len(magSelect) == 1:
@@ -27,7 +27,7 @@ def disComponents(magSelect, disX, disY, disZ):
 
 def cumulativeMag(peak, magnitude):
 	"""return the peak value based on original peak and given magnitude"""
-	peak = np.maximum(peak, magnitude.transpose())
+	peak = np.maximum(peak, magnitude)
 	return peak
 # end of cumulativeMag
 
@@ -54,6 +54,11 @@ def init_peak(stepAlongStrike, alongStrike, stepDownDip, downDip):
 	return peak
 # end of init_peak
 
+def derivative(data1, data2, dt):
+	data = (data2-data1)/dt
+	return data
+# end of derivative
+
 def plot(peak):
 	im = plt.imshow(peak)
 
@@ -75,20 +80,45 @@ if __name__ == "__main__":
 		fp = open('planedisplacements.0', 'r')
 	except IOError:
 		print "[ERROR]: No such file."
-	start = 0
 	simulationTime = 100
 	deltaT = 0.025
 	runtime = int(simulationTime/deltaT)
-	# peak = init_peak(1000, 136, 1000, 181)
+	plotType = 'd'
+	# disX0 = init_peak(1000, 136, 1000, 181)
+	# disY0 = init_peak(1000, 136, 1000, 181)
+	# disZ0 = init_peak(1000, 136, 1000, 181)
+	zeros = init_peak(1000, 136, 1000, 181).transpose()
+	print zeros.shape
+	disX0, disY0, disZ0 = zeros, zeros, zeros
+	velX0, velY0, velZ0 = zeros, zeros, zeros
 
-	for i in range(start, runtime):
+	for i in range(0, runtime):
 		disX, disY, disZ = readFile(fp, 181, 136)
-		# magnitude = disComponents([0], disX, disY, disZ)
+		# disX = disX.transpose()
+		# disX = disX.transpose()
+		# disX = disX.transpose()
+
+		velX = derivative(disX0, disX, deltaT)
+		velY = derivative(disY0, disY, deltaT)
+		velZ = derivative(disZ0, disZ, deltaT)
+
+		accX = derivative(velX0, velX, deltaT)
+		accY = derivative(velY0, velY, deltaT)
+		accZ = derivative(velZ0, velZ, deltaT)
+
+		dis_mag = components([0], disX, disY, disZ)
 		# magnitude = disComponents([0, 1], disX, disY, disZ)
-		magnitude = disComponents([0, 1, 2], disX, disY, disZ)
-		if i == start:
-			peak = magnitude.transpose()
-		peak = cumulativeMag(peak, magnitude)
+		# magnitude = disComponents([0, 1, 2], disX, disY, disZ)
+		vel_mag = components([0], velX, velY, velZ)
+		acc_mag = components([0], accX, accY, accZ)
+
+		if i == 0:
+			dis_peak = dis_mag
+			vel_peak = vel_mag
+			acc_peak = acc_mag
+		dis_peak = cumulativeMag(dis_peak, dis_mag)
+		vel_peak = cumulativeMag(vel_peak, dis_mag)
+		acc_peak = cumulativeMag(acc_peak, dis_mag)
 
 		# showing progress on terminal
 		percent = float(i)/runtime
@@ -97,6 +127,13 @@ if __name__ == "__main__":
 		sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
 		sys.stdout.flush()
 
-	plot(peak)
+		# update initial values for next iteration
+		disX0, disY0, disZ0 = disX, disY, disZ
+		velX0, velY0, velZ0 = velX, velY, velZ
+
+	plot(dis_peak)
+	plot(vel_peak)
+	plot(acc_peak)
+
 	pass
 
