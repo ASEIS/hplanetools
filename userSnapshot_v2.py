@@ -9,16 +9,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab as ml
 
-def components(magSelect, disX, disY, disZ):
+def components(magSelect, dataX, dataY, dataZ):
 	"""decide components to use for displacement plotting"""
-	magDic = {0: disX, 1: disY, 2: disZ}
+	magDic = {'x': dataX, 'y': dataY, 'z': dataZ}
 	if len(magSelect) == 1:
 		magnitude = magDic[magSelect[0]]
 	elif len(magSelect) == 2:
 		magnitude = np.sqrt(np.power(magDic[magSelect[0]], 2) + np.power(magDic[magSelect[1]], 2))
-		# reverse X and Y
-		# if 0 and 1 in magSelect:
-		# 	magnitude = horizMag.transpose()
 	elif len(magSelect) == 3:
 		magnitude = np.sqrt(np.power(magDic[magSelect[0]], 2) + np.power(magDic[magSelect[1]], 2)
 			+ np.power(magDic[magSelect[2]], 2))
@@ -43,15 +40,19 @@ def readFile(fp, downDip, alongStrike):
 	disX = np.reshape(X, (downDip, alongStrike), order='F')
 	disY = np.reshape(Y, (downDip, alongStrike), order='F')
 	disZ = np.reshape(Z, (downDip, alongStrike), order='F')
+
+	disX = disX.transpose()
+	disY = disY.transpose()
+	disZ = disZ.transpose()
 	return disX, disY, disZ
 
-def init_peak(stepAlongStrike, alongStrike, stepDownDip, downDip):
-	"""initialize peak matrix"""
+def zero_matrix(stepAlongStrike, alongStrike, stepDownDip, downDip):
+	"""generate a matrix contains all zeros"""
 	y = np.array(range(0, stepAlongStrike*alongStrike, stepAlongStrike))
 	x = np.array(range(0, stepDownDip*downDip, stepDownDip))
 	x, y = np.meshgrid(x, y)
-	peak = np.zeros_like(x)
-	return peak
+	zeros = np.zeros_like(x)
+	return zeros
 # end of init_peak
 
 def derivative(data1, data2, dt):
@@ -84,19 +85,17 @@ if __name__ == "__main__":
 	deltaT = 0.025
 	runtime = int(simulationTime/deltaT)
 	plotType = 'd'
-	# disX0 = init_peak(1000, 136, 1000, 181)
-	# disY0 = init_peak(1000, 136, 1000, 181)
-	# disZ0 = init_peak(1000, 136, 1000, 181)
-	zeros = init_peak(1000, 136, 1000, 181).transpose()
-	print zeros.shape
+	magSelect = ['x']
+	# magSelect = ['x', 'z']
+	# magSelect = ['x', 'y', 'z']
+	numSnapshots = 's'
+
+	zeros = zero_matrix(1000, 136, 1000, 181)
 	disX0, disY0, disZ0 = zeros, zeros, zeros
 	velX0, velY0, velZ0 = zeros, zeros, zeros
 
 	for i in range(0, runtime):
 		disX, disY, disZ = readFile(fp, 181, 136)
-		# disX = disX.transpose()
-		# disX = disX.transpose()
-		# disX = disX.transpose()
 
 		velX = derivative(disX0, disX, deltaT)
 		velY = derivative(disY0, disY, deltaT)
@@ -106,34 +105,38 @@ if __name__ == "__main__":
 		accY = derivative(velY0, velY, deltaT)
 		accZ = derivative(velZ0, velZ, deltaT)
 
-		dis_mag = components([0], disX, disY, disZ)
-		# magnitude = disComponents([0, 1], disX, disY, disZ)
-		# magnitude = disComponents([0, 1, 2], disX, disY, disZ)
-		vel_mag = components([0], velX, velY, velZ)
-		acc_mag = components([0], accX, accY, accZ)
+		dis_mag = components(magSelect, disX, disY, disZ)
+		vel_mag = components(magSelect, velX, velY, velZ)
+		acc_mag = components(magSelect, accX, accY, accZ)
 
-		if i == 0:
+		if i == 0: # initialize peak
 			dis_peak = dis_mag
 			vel_peak = vel_mag
 			acc_peak = acc_mag
 		dis_peak = cumulativeMag(dis_peak, dis_mag)
-		vel_peak = cumulativeMag(vel_peak, dis_mag)
-		acc_peak = cumulativeMag(acc_peak, dis_mag)
+		vel_peak = cumulativeMag(vel_peak, vel_mag)
+		acc_peak = cumulativeMag(acc_peak, acc_mag)
+
+		if numSnapshots == 'm':
+			plot(dis_peak)
+			# plot(vel_peak)
+			# plot(acc_peak)
 
 		# showing progress on terminal
 		percent = float(i)/runtime
 		hashes = '#'*int(round(percent*20))
 		spaces = ' '*(20-len(hashes))
-		sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
+		sys.stdout.write("\rProgress: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
 		sys.stdout.flush()
 
 		# update initial values for next iteration
 		disX0, disY0, disZ0 = disX, disY, disZ
 		velX0, velY0, velZ0 = velX, velY, velZ
 
-	plot(dis_peak)
-	plot(vel_peak)
-	plot(acc_peak)
-
-	pass
+	# plotting cumulative values
+	if numSnapshots == 's':
+		plot(dis_peak)
+		plot(vel_peak)
+		plot(acc_peak)
+	sys.stdout.write('\n')
 
