@@ -120,8 +120,6 @@ if __name__ == "__main__":
 	velX0, velY0, velZ0 = zeros, zeros, zeros
 
 	plotType_dict = {}
-	print userInput.__dict__
-
 	for i in range(0, runtime):
 		disX, disY, disZ = readFile(userInput.fp, 181, 136)
 

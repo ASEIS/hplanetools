@@ -18,17 +18,20 @@ class Input(object):
 		self.barChoice, self.barMin, self.barMax = '', 0.0, 0.0
 		self.colorChoice, self.userColor1, self.userColor2, self.userColor3, self.colorMap = '', '', '', '', 'hot'
 
+		filename =''
 		if len(args) <= 1:
 			if len(args) == 1: # if file is given with command
-				self.set_fp(args[0])
+				filename = self.set_fp(args[0])
 
 			elif len(args) == 0:
-				self.get_fp()
+				filename = self.get_fp()
 			self.get_plotType()
 			self.get_deltaT()
 			self.get_int('simulationTime')
 			self.get_int('alongStrike')
 			self.get_int('downDip')
+			self.check_size(filename)
+
 			self.get_int('stepAlongStrike')
 			self.get_int('stepDownDip')
 			self.get_mag()
@@ -44,7 +47,7 @@ class Input(object):
 			self.get_color()
 
 		elif len(args) == 9: # if parameters are given with command
-			self.set_fp(args[0])
+			filename = self.set_fp(args[0])
 			self.set_plotType(args[1])
 			self.set_deltaT(args[2])
 			self.set_int_fields('simulationTime', args[3])
@@ -53,6 +56,7 @@ class Input(object):
 			self.set_int_fields('stepAlongStrike', args[6])
 			self.set_int_fields('stepDownDip', args[7])
 			self.set_mag(args[8])
+			self.check_size(filename)
 			return
 
 		else:
@@ -65,7 +69,7 @@ class Input(object):
 		try:
 			fp = open(filename, 'r')
 			self.fp = fp
-			return True
+			return filename
 		except IOError:
 			print "[ERROR]: file not found."
 			return False
@@ -74,8 +78,9 @@ class Input(object):
 	def get_fp(self):
 		fp = ''
 		while not fp:
-			filename = raw_input("== Enter the filename of plane data: ")
-			fp = set_fp(filename)
+			fp = raw_input("== Enter the filename of plane data: ")
+			fp = self.set_fp(fp)
+		return fp
 	# end of get_fp
 
 	def set_plotType(self, ptype):
@@ -290,11 +295,11 @@ class Input(object):
 		"""compare the size of given file and the estimated size"""
 		stat = os.stat(filename)
 		act_size = stat.st_size
-		est_size = self.alongStrike*self.downDip #TODO
+		est_size = self.alongStrike*self.downDip*self.simulationTime/self.deltaT*64*3/8
 
 		if act_size != est_size:
-			# TODO
-			pass
+			print "[ERROR]: the size of given file doesn't match given parameters."
+			sys.exit()
 	# end of check_size
 # end of input
 
