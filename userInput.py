@@ -5,31 +5,19 @@
 import os
 import sys
 class Input(object):
-	fp = ""
-	plotType = ""
-	deltaT = 0.0
-	simulationTime = 0
-	alongStrike = 0
-	downDip = 0
-	stepAlongStrike = 0
-	stepDownDip = 0
-	magSelect = ""
-	magnitude = ""
-	scale = ""
-	cumulative = ""
-	snapshots = ""
-	numSnapshots = 0
-	barChoice = ""
-	barMin = 0.0
-	barMax = 0.0
-	colorChoice = ""
-	userColor1 = ""
-	userColor2 = ""
-	userColor3 = ""
-	colorMap = ""
-
-
 	def __init__(self, *args):
+		self.fp = ""
+		self.plotType = ""
+		self.deltaT = 0.0
+		self.simulationTime, self.alongStrike, self.downDip, self.stepAlongStrike, self.stepDownDip = 0, 0, 0, 0, 0
+		self.magSelect, self.magnitude = [], False
+		self.scale = ""
+		self.cumulative = True
+		# self.snapshots, self.numSnapshots = "m", 5
+		self.snapshots, self.numSnapshots = 's', 0
+		self.barChoice, self.barMin, self.barMax = '', 0.0, 0.0
+		self.colorChoice, self.userColor1, self.userColor2, self.userColor3, self.colorMap = '', '', '', '', 'hot'
+
 		if len(args) <= 1:
 			if len(args) == 1: # if file is given with command
 				self.set_fp(args[0])
@@ -52,7 +40,8 @@ class Input(object):
 				self.numSnapshots = self.get_numsnap()
 			self.barChoice = self.get_bar()
 			if self.barChoice:
-				self.barMin, self.barMax = self.get_min_max()
+				self.get_min_max()
+			self.get_color()
 
 		elif len(args) == 9: # if parameters are given with command
 			self.set_fp(args[0])
@@ -261,24 +250,40 @@ class Input(object):
 		"""get the minimum and maximum value for colorbar"""
 		while True:
 			values = raw_input("== Enter the MAX and MIN values for colorbar: ").replace(',', ' ').split()
-			try:
-				barMin = values[0]
-				barMax = values[1]
-			except IndexError:
-				print "[ERROR]: enter two numbers for min and max values."
-
-			try:
-				barMin = float(barMin)
-				barMax = float(barMax)
-				return barMin, barMax
-			except ValueError:
-				print "[ERROR]: invalid input type; floats ONLY."
+			if len(values) == 2:
+				try:
+					barMin = float(values[0])
+					barMax = float(values[1])
+					if barMin < barMax:
+						self.barMin = barMin
+						self.barMax = barMax
+						return
+					else:
+						print "[ERROR]: barMax has to be greater than barMin."
+				except IndexError and ValueError:
+					print "[ERROR]: enter two floats for min and max values."
+			else:
+				print "[ERROR]: enter two floats for min and max values."
 	# end of get_min_max
 
-
-
-	def get_color():
-		pass
+	def get_color(self):
+		choice_list1 = ['color map', 'map']
+		choice_list2 = ['custom', 'colors', 'custom colors']
+		while True:
+			colorChoice = raw_input("== Use a color map or custom colors? ").lower()
+			if colorChoice in choice_list1: # choose a color map
+				self.colorChoice = 'm'
+				self.colorMap = raw_input("== Enter the colormap for the plot: ").lower()
+				return
+			elif colorChoice in choice_list2: # choose custom colors
+				self.colorChoice = 'c'
+				self.userColor1 = raw_input("== Enter the first color: ")
+				self.userColor2 = raw_input("== Enter the second color: ")
+				self.userColor3 = raw_input("== Enter the third color: ")
+				return
+			else:
+				print "[ERROR]: invalid inputs; choose 'map' or 'custom'."
+	# end of get_color
 
 
 	def check_size(self, filename):

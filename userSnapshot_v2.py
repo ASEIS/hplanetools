@@ -8,6 +8,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab as ml
+from userInput import *
 
 def components(magSelect, dataX, dataY, dataZ):
 	"""decide components to use for displacement plotting"""
@@ -22,7 +23,7 @@ def components(magSelect, dataX, dataY, dataZ):
 	return magnitude
 # end of disComponents
 
-def cumulativeMag(peak, magnitude):
+def cumulativePeak(peak, magnitude):
 	"""return the peak value based on original peak and given magnitude"""
 	peak = np.maximum(peak, magnitude)
 	return peak
@@ -60,8 +61,21 @@ def derivative(data1, data2, dt):
 	return data
 # end of derivative
 
-def plot(peak):
-	im = plt.imshow(peak)
+def plot(peak, userInput):
+	# if userInput.colorChoice == 'c':
+	# 	c = colors.ColorConverter().to_rgb
+	# 	userInput.colorMap = make_colormap(
+	# 	[c(userInput.userColor1), c(userInput.userColor2), 0.5,
+	# 	c(userInput.userColor2), c(userInput.userColor3), 1,
+	# 	c(userInput.userColor3)])
+
+	if userInput.barChoice:
+		im = plt.imshow(peak, vmin=userInput.barMin,
+			vmax=userInput.barMax, cmap=userInput.colorMap)
+	else:
+		im = plt.imshow(peak, cmap=userInput.colorMap)
+
+	# im = plt.imshow(peak)
 
 	plt.axis('off')
 	plt.gca().invert_yaxis()
@@ -69,33 +83,52 @@ def plot(peak):
 	plt.colorbar(im)
 	plt.xlabel('X')
 	plt.ylabel('Y')
-	plt.suptitle('t = ' + (str)((int)(i*0.025)), fontsize=20)
+	plt.suptitle('t = ' + (str)((int)(i*userInput.deltaT)), fontsize=20)
 	plt.axis('scaled')
+
+	# TODO: save images
+	# if userInput.plotType == 'd':
+	# 	plt.savefig("displacement" + str(counting) + ".png")
+	# if userInput.plotType == 'v':
+	# 	plt.savefig("velocity" + str(counting) + ".png")
+	# if userInput.plotType == 'a':
+	# 	plt.savefig("acceleration" + str(counting) + ".png")
 
 	plt.show()
 # end of plot
 
 
 if __name__ == "__main__":
-	try:
-		fp = open('planedisplacements.0', 'r')
-	except IOError:
-		print "[ERROR]: No such file."
-	simulationTime = 100
-	deltaT = 0.025
+	if len(sys.argv) > 1:
+		argument = tuple(sys.argv[1:])
+		userInput = Input(*argument)
+	else:
+		userInput = Input()
+
+	simulationTime = userInput.simulationTime
+	deltaT = userInput.deltaT
 	runtime = int(simulationTime/deltaT)
-	plotType = 'd'
-	magSelect = ['x']
-	# magSelect = ['x', 'z']
-	# magSelect = ['x', 'y', 'z']
-	numSnapshots = 's'
+	plotType = userInput.plotType
+	magSelect = userInput.magSelect
+	snapshots = userInput.snapshots
+	numSnapshots = userInput.numSnapshots
+	magnitude = userInput.magnitude
+	cumulative = userInput.cumulative
 
 	zeros = zero_matrix(1000, 136, 1000, 181)
 	disX0, disY0, disZ0 = zeros, zeros, zeros
 	velX0, velY0, velZ0 = zeros, zeros, zeros
 
+	plotType_dict = {}
+	print userInput.__dict__
+
 	for i in range(0, runtime):
-		disX, disY, disZ = readFile(fp, 181, 136)
+		disX, disY, disZ = readFile(userInput.fp, 181, 136)
+
+		if magnitude:
+			disX =  np.absolute(disX)
+			disY =  np.absolute(disY)
+			disZ =  np.absolute(disZ)
 
 		velX = derivative(disX0, disX, deltaT)
 		velY = derivative(disY0, disY, deltaT)
@@ -109,18 +142,23 @@ if __name__ == "__main__":
 		vel_mag = components(magSelect, velX, velY, velZ)
 		acc_mag = components(magSelect, accX, accY, accZ)
 
-		if i == 0: # initialize peak
+		if i == 0 or not cumulative: # initialize peak
 			dis_peak = dis_mag
 			vel_peak = vel_mag
 			acc_peak = acc_mag
-		dis_peak = cumulativeMag(dis_peak, dis_mag)
-		vel_peak = cumulativeMag(vel_peak, vel_mag)
-		acc_peak = cumulativeMag(acc_peak, acc_mag)
 
-		if numSnapshots == 'm':
-			plot(dis_peak)
-			# plot(vel_peak)
-			# plot(acc_peak)
+		if cumulative:
+			dis_peak = cumulativePeak(dis_peak, dis_mag)
+			vel_peak = cumulativePeak(vel_peak, vel_mag)
+			acc_peak = cumulativePeak(acc_peak, acc_mag)
+
+		# update dictionary for different plotType
+		plotType_dict['a'] = acc_peak
+		plotType_dict['v'] = vel_peak
+		plotType_dict['d'] = dis_peak
+
+		if snapshots == 'm' and ((i*deltaT)%numSnapshots == 0):
+			plot(plotType_dict[userInput.plotType], userInput)
 
 		# showing progress on terminal
 		percent = float(i)/runtime
@@ -134,9 +172,7 @@ if __name__ == "__main__":
 		velX0, velY0, velZ0 = velX, velY, velZ
 
 	# plotting cumulative values
-	if numSnapshots == 's':
-		plot(dis_peak)
-		plot(vel_peak)
-		plot(acc_peak)
+	if snapshots == 's':
+		plot(plotType_dict[userInput.plotType], userInput)
 	sys.stdout.write('\n')
 
