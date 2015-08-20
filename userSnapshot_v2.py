@@ -61,7 +61,7 @@ def derivative(data1, data2, dt):
 	return data
 # end of derivative
 
-def plot(peak, userInput):
+def plot(peak, userInput, index):
 	# if userInput.colorChoice == 'c':
 	# 	c = colors.ColorConverter().to_rgb
 	# 	userInput.colorMap = make_colormap(
@@ -83,28 +83,18 @@ def plot(peak, userInput):
 	plt.colorbar(im)
 	plt.xlabel('X')
 	plt.ylabel('Y')
-	plt.suptitle('t = ' + (str)((int)(i*userInput.deltaT)), fontsize=20)
+	plt.suptitle('t = ' + (str)(index*userInput.numSnapshots), fontsize=20)
 	plt.axis('scaled')
-
-	# TODO: save images
-	# if userInput.plotType == 'd':
-	# 	plt.savefig("displacement" + str(counting) + ".png")
-	# if userInput.plotType == 'v':
-	# 	plt.savefig("velocity" + str(counting) + ".png")
-	# if userInput.plotType == 'a':
-	# 	plt.savefig("acceleration" + str(counting) + ".png")
-
+	saveImage(index, userInput.plotType)
 	plt.show()
 # end of plot
 
+def saveImage(index, plotType):
+	type_dict = {'a': 'acceleration', 'v': 'velocity', 'd': 'displacement'}
+	plt.savefig(type_dict[plotType] + str(index) + ".png")
+# end of saveImage
 
-if __name__ == "__main__":
-	if len(sys.argv) > 1:
-		argument = tuple(sys.argv[1:])
-		userInput = Input(*argument)
-	else:
-		userInput = Input()
-
+def userSnapshot(userInput):
 	simulationTime = userInput.simulationTime
 	deltaT = userInput.deltaT
 	runtime = int(simulationTime/deltaT)
@@ -115,14 +105,17 @@ if __name__ == "__main__":
 	magnitude = userInput.magnitude
 	cumulative = userInput.cumulative
 
+	# initializing data
 	zeros = zero_matrix(1000, 136, 1000, 181)
 	disX0, disY0, disZ0 = zeros, zeros, zeros
 	velX0, velY0, velZ0 = zeros, zeros, zeros
 
 	plotType_dict = {}
+	index = 0
 	for i in range(0, runtime):
 		disX, disY, disZ = readFile(userInput.fp, 181, 136)
 
+		# signed / unsigned
 		if magnitude:
 			disX =  np.absolute(disX)
 			disY =  np.absolute(disY)
@@ -156,7 +149,8 @@ if __name__ == "__main__":
 		plotType_dict['d'] = dis_peak
 
 		if snapshots == 'm' and ((i*deltaT)%numSnapshots == 0):
-			plot(plotType_dict[userInput.plotType], userInput)
+			index += 1
+			plot(plotType_dict[userInput.plotType], userInput, index)
 
 		# showing progress on terminal
 		percent = float(i)/runtime
@@ -173,4 +167,16 @@ if __name__ == "__main__":
 	if snapshots == 's':
 		plot(plotType_dict[userInput.plotType], userInput)
 	sys.stdout.write('\n')
+# end of userSnapshot
+
+
+if __name__ == "__main__":
+	if len(sys.argv) > 1:
+		argument = tuple(sys.argv[1:])
+		userInput = Input(*argument)
+	else:
+		userInput = Input()
+
+	userSnapshot(userInput)
+
 

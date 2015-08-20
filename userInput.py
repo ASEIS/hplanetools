@@ -13,8 +13,8 @@ class Input(object):
 		self.magSelect, self.magnitude = [], False
 		self.scale = ""
 		self.cumulative = True
-		# self.snapshots, self.numSnapshots = "m", 5
-		self.snapshots, self.numSnapshots = 's', 0
+		self.snapshots, self.numSnapshots = "m", 5
+		# self.snapshots, self.numSnapshots = 's', 0
 		self.barChoice, self.barMin, self.barMax = '', 0.0, 0.0
 		self.colorChoice, self.userColor1, self.userColor2, self.userColor3, self.colorMap = '', '', '', '', 'hot'
 
