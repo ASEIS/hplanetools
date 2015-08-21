@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab as ml
 from userInput import *
+from planeData import *
 
 def components(magSelect, dataX, dataY, dataZ):
 	"""decide components to use for displacement plotting"""
@@ -45,7 +46,10 @@ def readFile(fp, downDip, alongStrike):
 	disX = disX.transpose()
 	disY = disY.transpose()
 	disZ = disZ.transpose()
-	return disX, disY, disZ
+
+	dis = Data('d', disX, disY, disZ)
+	# return disX, disY, disZ
+	return dis
 
 def zero_matrix(stepAlongStrike, alongStrike, stepDownDip, downDip):
 	"""generate a matrix contains all zeros"""
@@ -56,11 +60,6 @@ def zero_matrix(stepAlongStrike, alongStrike, stepDownDip, downDip):
 	return zeros
 # end of init_peak
 
-def derivative(data1, data2, dt):
-	data = (data2-data1)/dt
-	return data
-# end of derivative
-
 def plot(peak, userInput, index):
 	# if userInput.colorChoice == 'c':
 	# 	c = colors.ColorConverter().to_rgb
@@ -69,7 +68,7 @@ def plot(peak, userInput, index):
 	# 	c(userInput.userColor2), c(userInput.userColor3), 1,
 	# 	c(userInput.userColor3)])
 
-	if userInput.barChoice:
+	if userInput.barMin != 0.0 and userInput.barMax != 0.0:
 		im = plt.imshow(peak, vmin=userInput.barMin,
 			vmax=userInput.barMax, cmap=userInput.colorMap)
 	else:
@@ -94,11 +93,63 @@ def saveImage(index, plotType):
 	plt.savefig(type_dict[plotType] + str(index) + ".png")
 # end of saveImage
 
+# def derivative(data1, data2, dt):
+# 	data = (data2-data1)/dt
+# 	return data
+# # end of derivative
+
+def derivative(data0, data, deltaT):
+	dataX = (data.dataX - data0.dataX)/dt
+	dataY = (data.dataY - data0.dataY)/dt
+	dataZ = (data.dataZ - data0.dataZ)/dt
+	newData = Data(data.dtype, dataX, dataY, dataZ)
+
+	return newData
+# end of derivative
+
+
+def processData(planeData, userInput, peak):
+	"""process given data objects"""
+	dis = planeData.dis
+	pre_dis = planeData.pre_dis
+	pre_vel = planeData.pre_vel
+
+	process_dict = {'v': derivative(pre_dis, dis, userInput.deltaT),
+	'a': derivative(pre_vel, derivative(pre_dis, dis, userInput.deltaT), userInput.deltaT)}
+
+
+	data = process_dict[userInput.plotType]
+	dataX, dataY, dataZ = data.dataX, data.dataY, data.dataZ
+	data_mag = components(userInput.magSelect, dataX, dataY, dataZ)
+
+	if i == 0 or not cumulative: # initialize peak
+		peak = data_mag
+
+	if cumulative:
+		peak = cumulativePeak(peak, data_mag)
+	else:
+		peak = data_mag
+
+	# update planeData
+	# planeData.update(pre, )
+	# TODO
+
+
+	return peak
+
+
+
+	pass
+
 def userSnapshot(userInput):
 	simulationTime = userInput.simulationTime
 	deltaT = userInput.deltaT
 	runtime = int(simulationTime/deltaT)
 	plotType = userInput.plotType
+	alongStrike = userInput.alongStrike
+	downDip = userInput.downDip
+	stepAlongStrike = userInput.stepAlongStrike
+	stepDownDip = userInput.stepDownDip
 	magSelect = userInput.magSelect
 	snapshots = userInput.snapshots
 	numSnapshots = userInput.numSnapshots
@@ -106,14 +157,17 @@ def userSnapshot(userInput):
 	cumulative = userInput.cumulative
 
 	# initializing data
-	zeros = zero_matrix(1000, 136, 1000, 181)
-	disX0, disY0, disZ0 = zeros, zeros, zeros
-	velX0, velY0, velZ0 = zeros, zeros, zeros
+	zeros = zero_matrix(stepAlongStrike, alongStrike, stepDownDip, downDip)
+	dis0 = Data('d', zeros, zeros, zeros)
+	vel0 = Data('v', zeros, zeros, zeros)
+	# disX0, disY0, disZ0 = zeros, zeros, zeros
+	# velX0, velY0, velZ0 = zeros, zeros, zeros
 
 	plotType_dict = {}
 	index = 0
 	for i in range(0, runtime):
-		disX, disY, disZ = readFile(userInput.fp, 181, 136)
+		dis = readFile(userInput.fp, downDip, alongStrike)
+		planeData = PlaneData(dis, dis0, vel0)
 
 		# signed / unsigned
 		if magnitude:
@@ -165,7 +219,7 @@ def userSnapshot(userInput):
 
 	# plotting cumulative values
 	if snapshots == 's':
-		plot(plotType_dict[userInput.plotType], userInput)
+		plot(plotType_dict[userInput.plotType], userInput, 0)
 	sys.stdout.write('\n')
 # end of userSnapshot
 

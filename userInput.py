@@ -13,18 +13,22 @@ class Input(object):
 		self.magSelect, self.magnitude = [], False
 		self.scale = ""
 		self.cumulative = True
-		self.snapshots, self.numSnapshots = "m", 5
-		# self.snapshots, self.numSnapshots = 's', 0
-		self.barChoice, self.barMin, self.barMax = '', 0.0, 0.0
+		# self.snapshots, self.numSnapshots = "m", 5
+		self.snapshots, self.numSnapshots = 's', 0
+		self.barMin, self.barMax = 0.0, 0.0
 		self.colorChoice, self.userColor1, self.userColor2, self.userColor3, self.colorMap = '', '', '', '', 'hot'
+
+		if len(args) == 1:
+			args = self.read_parameter(args[0])[:9]
 
 		filename =''
 		if len(args) <= 1:
-			if len(args) == 1: # if file is given with command
-				filename = self.set_fp(args[0])
+			# if len(args) == 1: # if file is given with command
+			# 	filename = self.set_fp(args[0])
 
-			elif len(args) == 0:
-				filename = self.get_fp()
+			# elif len(args) == 0:
+			# 	filename = self.get_fp()
+			filename = self.get_fp()
 			self.get_plotType()
 			self.get_deltaT()
 			self.get_int('simulationTime')
@@ -34,16 +38,19 @@ class Input(object):
 
 			self.get_int('stepAlongStrike')
 			self.get_int('stepDownDip')
-			self.get_mag()
+			self.get_magSelect()
+			if len(self.magSelect) == 1:
+				self.get_magnitude()
 
 			self.scale = self.get_scale()
 			self.cumulative = self.get_cum()
 			self.snapshots = self.get_snap()
 			if self.snapshots == 'm':
 				self.numSnapshots = self.get_numsnap()
-			self.barChoice = self.get_bar()
-			if self.barChoice:
-				self.get_min_max()
+			# self.barChoice = self.get_bar()
+			# if self.barChoice:
+			# 	self.get_min_max()
+			self.get_min_max()
 			self.get_color()
 
 		elif len(args) == 9: # if parameters are given with command
@@ -61,9 +68,21 @@ class Input(object):
 
 		else:
 			print "[ERROR]: invalid parameters."
-			return
+			sys.exit()
 
 	# end of __init__
+
+	def read_parameter(self, filename):
+		"""loads the file contains parameters"""
+		try:
+			fp = open(filename, 'r')
+			for line in fp:
+				params = line.split(' ')
+				return params
+		except IOError:
+			print "[ERROR]: file not found."
+			sys.exit()
+	# end of read_parameter
 
 	def set_fp(self, filename):
 		try:
@@ -167,27 +186,43 @@ class Input(object):
 		return magSelect
 	# end of set_mag
 
-	def get_mag(self):
+	def get_magSelect(self):
 		magSelect = []
 		while not magSelect:
 			magSelect = raw_input("== Enter the axis to plot (x/y/z/xy..): ")
 			magSelect = self.set_mag(magSelect)
 
-		# decide whether or not to plot magnitude
-		magnitude = True
+	def set_magnitude(self, magnitude):
 		bool_dict = {'y':True, 'n':False}
-		if len(magSelect) == 1:
-			m = ''
-			while not m:
-				m = raw_input("== Would you like to plot the magnitude? (y/n) ").lower()
-				if m:
-					if m[0] in bool_dict.keys():
-						self.magnitude = bool_dict[m[0]]
-						break
-					else:
-						print "[ERROR]: invalid input."
-						m = ''
-	# end of get_mag
+		if magnitude[0] in bool_dict.keys():
+			self.magnitude = bool_dict[magnitude[0]]
+			return True
+		else:
+			print "[ERROR]: invalid choice for plotting magnitude."
+			return ''
+	# end of set_magnitude
+
+	def get_magnitude(self):
+		# decide whether or not to plot magnitude
+		m = ''
+		while not m:
+			m = raw_input("== Would you like to plot the magnitude? (y/n) ").lower()
+			m = self.set_magnitude(m)
+
+
+		# magnitude = True
+		# if len(self.magSelect) == 1:
+		# 	m = ''
+		# 	while not m:
+		# 		m = raw_input("== Would you like to plot the magnitude? (y/n) ").lower()
+		# 		if m:
+		# 			if m[0] in bool_dict.keys():
+		# 				self.magnitude = bool_dict[m[0]]
+		# 				break
+		# 			else:
+		# 				print "[ERROR]: invalid input."
+		# 				m = ''
+	# end of get_magSelect
 
 	def get_scale(self):
 		"""get the plotting scale from user"""
@@ -238,23 +273,23 @@ class Input(object):
 				print "[ERROR]: invalid input; int ONLY."
 	# end of get_numsnap
 
-	def get_bar(self):
-		barChoice = ''
-		bool_dict = {'y':True, 'n':False}
-		while not barChoice:
-			barChoice = raw_input("== Set colorbar minimum and maximum? (y/n) ").lower()
-			if barChoice:
-				if barChoice[0] in bool_dict.keys():
-					return bool_dict[barChoice[0]]
-				else:
-					print "[ERROR]: invalid input."
-					barChoice = ''
+	# def get_bar(self):
+	# 	barChoice = ''
+	# 	bool_dict = {'y':True, 'n':False}
+	# 	while not barChoice:
+	# 		barChoice = raw_input("== Set colorbar minimum and maximum? (y/n) ").lower()
+	# 		if barChoice:
+	# 			if barChoice[0] in bool_dict.keys():
+	# 				return bool_dict[barChoice[0]]
+	# 			else:
+	# 				print "[ERROR]: invalid input."
+	# 				barChoice = ''
 	# end of get_bar
 
 	def get_min_max(self):
 		"""get the minimum and maximum value for colorbar"""
 		while True:
-			values = raw_input("== Enter the MAX and MIN values for colorbar: ").replace(',', ' ').split()
+			values = raw_input("== Enter the MIN and MAX values for colorbar (optional): ").replace(',', ' ').split()
 			if len(values) == 2:
 				try:
 					barMin = float(values[0])
@@ -267,6 +302,8 @@ class Input(object):
 						print "[ERROR]: barMax has to be greater than barMin."
 				except IndexError and ValueError:
 					print "[ERROR]: enter two floats for min and max values."
+			elif not values:
+				return # keep default
 			else:
 				print "[ERROR]: enter two floats for min and max values."
 	# end of get_min_max
