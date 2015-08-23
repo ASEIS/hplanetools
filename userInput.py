@@ -181,7 +181,7 @@ class Input(object):
 			print "[ERROR]: invalid axis; x/y/z or their combinations ONLY."
 			return []
 
-		magSelect = list(set(magSelect)) # remove duplicates
+		magSelect = sorted(list(set(magSelect))) # sort and remove duplicates
 		self.magSelect = magSelect
 		return magSelect
 	# end of set_mag
@@ -315,7 +315,7 @@ class Input(object):
 			colorChoice = raw_input("== Use a color map or custom colors? ").lower()
 			if colorChoice in choice_list1: # choose a color map
 				self.colorChoice = 'm'
-				self.colorMap = raw_input("== Enter the colormap for the plot: ").lower()
+				self.colorMap = raw_input("== Enter the colormap for the plot: ")
 				return
 			elif colorChoice in choice_list2: # choose custom colors
 				self.colorChoice = 'c'

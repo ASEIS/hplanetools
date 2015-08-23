@@ -30,6 +30,9 @@ def cumulativePeak(peak, magnitude):
 	return peak
 # end of cumulativeMag
 
+def notCum(peak, data_mag):
+	return data_mag
+
 def readFile(fp, downDip, alongStrike):
 	"""read the binary file to get the X, Y, Z values and reshape each
 	into a 2D matrix"""
@@ -93,12 +96,17 @@ def saveImage(index, plotType):
 	plt.savefig(type_dict[plotType] + str(index) + ".png")
 # end of saveImage
 
-# def derivative(data1, data2, dt):
-# 	data = (data2-data1)/dt
-# 	return data
-# # end of derivative
+def signed(dis):
+	return dis
 
-def derivative(data0, data, deltaT):
+def unsigned(dis):
+	"""take the absolute value of given data"""
+	dis.dataX =  np.absolute(dis.dataX)
+	dis.dataY =  np.absolute(dis.dataY)
+	dis.dataZ =  np.absolute(dis.dataZ)
+	return dis
+
+def derivative(data0, data, dt):
 	dataX = (data.dataX - data0.dataX)/dt
 	dataY = (data.dataY - data0.dataY)/dt
 	dataZ = (data.dataZ - data0.dataZ)/dt
@@ -107,39 +115,25 @@ def derivative(data0, data, deltaT):
 	return newData
 # end of derivative
 
-
-def processData(planeData, userInput, peak):
-	"""process given data objects"""
+def processDis(planeData, userInuput):
 	dis = planeData.dis
-	pre_dis = planeData.pre_dis
-	pre_vel = planeData.pre_vel
+	mag = components(userInuput.magSelect, dis.dataX, dis.dataY, dis.dataZ)
+	return planeData, mag
 
-	process_dict = {'v': derivative(pre_dis, dis, userInput.deltaT),
-	'a': derivative(pre_vel, derivative(pre_dis, dis, userInput.deltaT), userInput.deltaT)}
+def processVel(planeData, userInuput):
+	vel = derivative(planeData.pre_dis, planeData.dis, userInuput.deltaT)
+	planeData.pre_dis = planeData.dis # update planeData
+	mag = components(userInuput.magSelect, vel.dataX, vel.dataY, vel.dataZ)
+	return planeData, mag
 
+def processAcc(planeData, userInuput):
+	vel = derivative(planeData.pre_dis, planeData.dis, userInuput.deltaT)
+	acc = derivative(planeData.pre_vel, vel, userInuput.deltaT)
+	planeData.pre_dis = planeData.dis # update planeData
+	planeData.pre_vel = vel
+	mag = components(userInuput.magSelect, acc.dataX, acc.dataY, acc.dataZ)
+	return planeData, mag
 
-	data = process_dict[userInput.plotType]
-	dataX, dataY, dataZ = data.dataX, data.dataY, data.dataZ
-	data_mag = components(userInput.magSelect, dataX, dataY, dataZ)
-
-	if i == 0 or not cumulative: # initialize peak
-		peak = data_mag
-
-	if cumulative:
-		peak = cumulativePeak(peak, data_mag)
-	else:
-		peak = data_mag
-
-	# update planeData
-	# planeData.update(pre, )
-	# TODO
-
-
-	return peak
-
-
-
-	pass
 
 def userSnapshot(userInput):
 	simulationTime = userInput.simulationTime
@@ -158,53 +152,46 @@ def userSnapshot(userInput):
 
 	# initializing data
 	zeros = zero_matrix(stepAlongStrike, alongStrike, stepDownDip, downDip)
+	peak = zeros
+	data_mag = zeros
+	dis = Data('d', zeros, zeros, zeros)
 	dis0 = Data('d', zeros, zeros, zeros)
 	vel0 = Data('v', zeros, zeros, zeros)
-	# disX0, disY0, disZ0 = zeros, zeros, zeros
-	# velX0, velY0, velZ0 = zeros, zeros, zeros
+	planeData = PlaneData(dis, dis0, vel0)
+
+	# define functions to process data
+	process_dict = {}
+	if magnitude:
+		process_dict['mag'] = unsigned
+	else:
+		process_dict['mag'] = signed
+
+	if plotType == 'd':
+		process_dict['process'] = processDis
+	elif plotType == 'v':
+		process_dict['process'] = processVel
+	elif plotType == 'a':
+		process_dict['process'] = processAcc
+
+	if cumulative:
+		process_dict['cum'] = cumulativePeak
+	else:
+		process_dict['cum'] = notCum
+
 
 	plotType_dict = {}
 	index = 0
 	for i in range(0, runtime):
-		dis = readFile(userInput.fp, downDip, alongStrike)
-		planeData = PlaneData(dis, dis0, vel0)
+		planeData.dis = readFile(userInput.fp, downDip, alongStrike)
 
-		# signed / unsigned
-		if magnitude:
-			disX =  np.absolute(disX)
-			disY =  np.absolute(disY)
-			disZ =  np.absolute(disZ)
+		planeData.dis = process_dict['mag'](planeData.dis)
+		planeData, data_mag = process_dict['process'](planeData, userInput)
+		peak = process_dict['cum'](peak, data_mag)
 
-		velX = derivative(disX0, disX, deltaT)
-		velY = derivative(disY0, disY, deltaT)
-		velZ = derivative(disZ0, disZ, deltaT)
-
-		accX = derivative(velX0, velX, deltaT)
-		accY = derivative(velY0, velY, deltaT)
-		accZ = derivative(velZ0, velZ, deltaT)
-
-		dis_mag = components(magSelect, disX, disY, disZ)
-		vel_mag = components(magSelect, velX, velY, velZ)
-		acc_mag = components(magSelect, accX, accY, accZ)
-
-		if i == 0 or not cumulative: # initialize peak
-			dis_peak = dis_mag
-			vel_peak = vel_mag
-			acc_peak = acc_mag
-
-		if cumulative:
-			dis_peak = cumulativePeak(dis_peak, dis_mag)
-			vel_peak = cumulativePeak(vel_peak, vel_mag)
-			acc_peak = cumulativePeak(acc_peak, acc_mag)
-
-		# update dictionary for different plotType
-		plotType_dict['a'] = acc_peak
-		plotType_dict['v'] = vel_peak
-		plotType_dict['d'] = dis_peak
 
 		if snapshots == 'm' and ((i*deltaT)%numSnapshots == 0):
 			index += 1
-			plot(plotType_dict[userInput.plotType], userInput, index)
+			plot(peak, userInput, index)
 
 		# showing progress on terminal
 		percent = float(i)/runtime
@@ -213,13 +200,10 @@ def userSnapshot(userInput):
 		sys.stdout.write("\rProgress: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
 		sys.stdout.flush()
 
-		# update initial values for next iteration
-		disX0, disY0, disZ0 = disX, disY, disZ
-		velX0, velY0, velZ0 = velX, velY, velZ
 
 	# plotting cumulative values
 	if snapshots == 's':
-		plot(plotType_dict[userInput.plotType], userInput, 0)
+		plot(peak, userInput, 0)
 	sys.stdout.write('\n')
 # end of userSnapshot
 
