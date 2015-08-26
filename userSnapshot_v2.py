@@ -93,7 +93,7 @@ def plot(peak, userInput, index):
 
 def saveImage(index, plotType):
 	type_dict = {'a': 'acceleration', 'v': 'velocity', 'd': 'displacement'}
-	plt.savefig(type_dict[plotType] + str(index) + ".png")
+	plt.savefig(type_dict[plotType] + str(index*userInput.numSnapshots) + ".png")
 # end of saveImage
 
 def signed(dis):

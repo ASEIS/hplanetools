@@ -42,28 +42,47 @@ class Input(object):
 			if len(self.magSelect) == 1:
 				self.get_magnitude()
 
-			self.scale = self.get_scale()
-			self.cumulative = self.get_cum()
-			self.snapshots = self.get_snap()
+			self.get_scale()
+			self.get_cum()
+			self.get_snap()
 			if self.snapshots == 'm':
-				self.numSnapshots = self.get_numsnap()
-			# self.barChoice = self.get_bar()
-			# if self.barChoice:
-			# 	self.get_min_max()
-			self.get_min_max()
-			self.get_color()
+				self.get_numsnap()
+			self.get_bar()
+			if self.barChoice:
+				self.get_min_max()
+			self.get_colors()
 
-		elif len(args) == 9: # if parameters are given with command
+		elif len(args) > 1: # if parameters are given with command
+			args = list(args)
 			filename = self.set_fp(args[0])
 			self.set_plotType(args[1])
 			self.set_deltaT(args[2])
 			self.set_int_fields('simulationTime', args[3])
 			self.set_int_fields('alongStrike', args[4])
 			self.set_int_fields('downDip', args[5])
+			self.check_size(filename)
 			self.set_int_fields('stepAlongStrike', args[6])
 			self.set_int_fields('stepDownDip', args[7])
 			self.set_mag(args[8])
-			self.check_size(filename)
+			if len(self.magSelect) == 1:
+				self.set_magnitude(args[9])
+				del args[9]
+
+
+			self.set_scale(args[9])
+			self.set_cum(args[10])
+			self.set_snap(args[11])
+			if self.snapshots == 'm':
+				self.set_numsnap(args[12])
+				del args[12]
+
+			self.set_bar(args[12])
+			if self.barChoice:
+				print args[13:15]
+				self.set_min_max(args[13:15])
+				del args[13:15]
+
+			self.set_colors(args[13])
 			return
 
 		else:
@@ -209,122 +228,176 @@ class Input(object):
 			m = raw_input("== Would you like to plot the magnitude? (y/n) ").lower()
 			m = self.set_magnitude(m)
 
+	def set_scale(self, scale):
+		scale_list = ["linear", "log", "logarithmic"]
+		if scale in scale_list:
+			self.scale = scale
+			return scale
+		else:
+			print "[ERROR]: invalid scale type."
+			return ''
+	# end of set_scale
 
-		# magnitude = True
-		# if len(self.magSelect) == 1:
-		# 	m = ''
-		# 	while not m:
-		# 		m = raw_input("== Would you like to plot the magnitude? (y/n) ").lower()
-		# 		if m:
-		# 			if m[0] in bool_dict.keys():
-		# 				self.magnitude = bool_dict[m[0]]
-		# 				break
-		# 			else:
-		# 				print "[ERROR]: invalid input."
-		# 				m = ''
-	# end of get_magSelect
 
 	def get_scale(self):
 		"""get the plotting scale from user"""
-		scale_list = ["linear", "log", "logarithmic"]
 		scale = ''
 		while not scale:
 			scale = raw_input("== Select linear or logarithmic for plot: ").lower()
-			if scale in scale_list:
-				return scale
-			else:
-				print "[ERROR]: invalid scale type."
-				scale = ''
+			scale = self.set_scale(scale)
 	# end of get_scale
+
+	def set_cum(self, cum):
+		bool_dict = {'y':True, 'n':False}
+		if cum:
+			if cum[0] in bool_dict.keys():
+				self.cumulative = bool_dict[cum[0]]
+				return True
+			else:
+				print "[ERROR]: invalid input."
+				return False
+		else:
+			print "[ERROR]: missing cumulative choice."
+			return False
+	# end of set_cum
+
 
 	def get_cum(self):
 		cum = ''
-		bool_dict = {'y':True, 'n':False}
 		while not cum:
 			cum = raw_input("== Is this a cumulative plot? (y/n) ").lower()
-			if cum:
-				if cum[0] in bool_dict.keys():
-					return bool_dict[cum[0]]
-				else:
-					print "[ERROR]: invalid input."
-					cum = ''
+			cum = self.set_cum(cum)
 	# end of get_cum
+
+	def set_snap(self, snapshots):
+		if snapshots:
+			if snapshots[0] in ['s', 'm']:
+				self.snapshots = snapshots[0]
+				return snapshots[0]
+			else:
+				print "[ERROR]: invalid snapshot choice."
+				return ''
+		else:
+			print "[ERROR]: missing snapshot choice."
+			return ''
+	# end of set_snap
 
 	def get_snap(self):
 		snapshots =''
 		while not snapshots:
 			snapshots = raw_input("== Display a single plot or multiple plots? (s/m) ").lower()
-			if snapshots:
-				if snapshots[0] in ['s', 'm']:
-					return snapshots[0]
-				else:
-					print "[ERROR]: invalid input."
-					snapshots = ''
+			snapshots = self.set_snap(snapshots)
 	# end of get_snap
 
+	def set_numsnap(self, num):
+		try:
+			numSnapshots = int(num)
+			if numSnapshots != 0:
+				self.numSnapshots = numSnapshots
+				return True
+			else:
+				print "[ERROR]: numSnapshots cannot be 0. "
+				return False
+		except ValueError:
+			print "[ERROR]: invalid input; int ONLY."
+			return False
+	# end of set_numsnap
+
 	def get_numsnap(self):
-		numSnapshots = 0
-		while not numSnapshots:
+		num = 0
+		while not num:
 			num = raw_input("== Enter how many seconds in between each plot: ")
-			try:
-				numSnapshots = int(num)
-				return numSnapshots
-			except ValueError:
-				print "[ERROR]: invalid input; int ONLY."
+			num = self.set_numsnap(num)
 	# end of get_numsnap
 
-	# def get_bar(self):
-	# 	barChoice = ''
-	# 	bool_dict = {'y':True, 'n':False}
-	# 	while not barChoice:
-	# 		barChoice = raw_input("== Set colorbar minimum and maximum? (y/n) ").lower()
-	# 		if barChoice:
-	# 			if barChoice[0] in bool_dict.keys():
-	# 				return bool_dict[barChoice[0]]
-	# 			else:
-	# 				print "[ERROR]: invalid input."
-	# 				barChoice = ''
+	def set_bar(self, barChoice):
+		bool_dict = {'y':True, 'n':False}
+		if barChoice:
+			if barChoice[0] in bool_dict.keys():
+				self.barChoice = bool_dict[barChoice[0]]
+				return True
+			else:
+				print "[ERROR]: invalid barChoice."
+				return False
+		else:
+			print "[ERROR]: missing barChoice."
+			return False
+	# end of set_bar
+
+	def get_bar(self):
+		barChoice = ''
+		while not barChoice:
+			barChoice = raw_input("== Set colorbar minimum and maximum: (y/n) ").lower()
+			barChoice = self.set_bar(barChoice)
 	# end of get_bar
+
+	def set_min_max(self, values):
+		if len(values) == 2:
+			try:
+				barMin = float(values[0])
+				barMax = float(values[1])
+				if barMin < barMax:
+					self.barMin = barMin
+					self.barMax = barMax
+					return True
+				else:
+					print "[ERROR]: barMax has to be greater than barMin."
+					return False
+			except IndexError and ValueError:
+				print "[ERROR]: enter two floats for min and max values."
+				return False
+		else:
+			print "[ERROR]: enter two floats for min and max values."
+			return False
+	# end of set_min_max
+
 
 	def get_min_max(self):
 		"""get the minimum and maximum value for colorbar"""
-		while True:
-			values = raw_input("== Enter the MIN and MAX values for colorbar (optional): ").replace(',', ' ').split()
-			if len(values) == 2:
-				try:
-					barMin = float(values[0])
-					barMax = float(values[1])
-					if barMin < barMax:
-						self.barMin = barMin
-						self.barMax = barMax
-						return
-					else:
-						print "[ERROR]: barMax has to be greater than barMin."
-				except IndexError and ValueError:
-					print "[ERROR]: enter two floats for min and max values."
-			elif not values:
-				return # keep default
-			else:
-				print "[ERROR]: enter two floats for min and max values."
+		values = []
+		while not values:
+			values = raw_input("== Enter the MIN and MAX values for colorbar: ").replace(',', ' ').split()
+			values = self.set_min_max(values)
 	# end of get_min_max
 
-	def get_color(self):
-		choice_list1 = ['color map', 'map']
-		choice_list2 = ['custom', 'colors', 'custom colors']
-		while True:
-			colorChoice = raw_input("== Use a color map or custom colors? ").lower()
-			if colorChoice in choice_list1: # choose a color map
-				self.colorChoice = 'm'
-				self.colorMap = raw_input("== Enter the colormap for the plot: ")
-				return
-			elif colorChoice in choice_list2: # choose custom colors
-				self.colorChoice = 'c'
-				self.userColor1 = raw_input("== Enter the first color: ")
-				self.userColor2 = raw_input("== Enter the second color: ")
-				self.userColor3 = raw_input("== Enter the third color: ")
-				return
-			else:
-				print "[ERROR]: invalid inputs; choose 'map' or 'custom'."
+	def set_colors(self, colorChoice):
+		if colorChoice.endswith('.'):
+			pass
+			# TODO
+		else:
+			# TODO: check existence of color map
+			self.colorChoice = colorChoice
+			return True
+	# end of set_colors
+
+	def get_colors(self):
+		colorChoice = ''
+		while not colorChoice:
+			colorChoice = raw_input("== Enter a colormap or the path to custom color file: ")
+			colorChoice = self.set_colors(colorChoice)
+	# end of get_colors
+
+
+
+
+
+	# def get_color(self):
+	# 	choice_list1 = ['color map', 'map']
+	# 	choice_list2 = ['custom', 'colors', 'custom colors']
+	# 	while True:
+	# 		colorChoice = raw_input("== Use a color map or custom colors? ").lower()
+	# 		if colorChoice in choice_list1: # choose a color map
+	# 			self.colorChoice = 'm'
+	# 			self.colorMap = raw_input("== Enter the colormap for the plot: ")
+	# 			return
+	# 		elif colorChoice in choice_list2: # choose custom colors
+	# 			self.colorChoice = 'c'
+	# 			self.userColor1 = raw_input("== Enter the first color: ")
+	# 			self.userColor2 = raw_input("== Enter the second color: ")
+	# 			self.userColor3 = raw_input("== Enter the third color: ")
+	# 			return
+	# 		else:
+	# 			print "[ERROR]: invalid inputs; choose 'map' or 'custom'."
 	# end of get_color
 
 
@@ -348,22 +421,4 @@ if __name__ == "__main__":
 		i = Input()
 
 	print i.__dict__
-
-	# print i.plotType
-	# print i.deltaT
-	# print i.simulationTime
-	# print i.alongStrike
-	# print i.downDip
-	# print i.alongStrike
-	# print i.stepAlongStrike
-	# print i.stepDownDip
-	# print i.magSelect
-	# print i.magnitude
-	# print i.scale
-	# print i.cumulative
-	# print i.snapshots
-	# print i.numSnapshots
-	# print i.barChoice
-	# print i.barMin
-	# print i.barMax
 
