@@ -15,19 +15,14 @@ class Input(object):
 		self.cumulative = True
 		# self.snapshots, self.numSnapshots = "m", 5
 		self.snapshots, self.numSnapshots = 's', 0
-		self.barMin, self.barMax = 0.0, 0.0
-		self.colorChoice, self.userColor1, self.userColor2, self.userColor3, self.colorMap = '', '', '', '', 'hot'
+		self.barChoice, self.barMin, self.barMax = False, 0.0, 0.0
+		self.colorMap = 'hot'
 
 		if len(args) == 1:
-			args = self.read_parameter(args[0])[:9]
+			args = self.read_parameter(args[0])
 
 		filename =''
-		if len(args) <= 1:
-			# if len(args) == 1: # if file is given with command
-			# 	filename = self.set_fp(args[0])
-
-			# elif len(args) == 0:
-			# 	filename = self.get_fp()
+		if len(args) == 0:
 			filename = self.get_fp()
 			self.get_plotType()
 			self.get_deltaT()
@@ -52,43 +47,41 @@ class Input(object):
 				self.get_min_max()
 			self.get_colors()
 
-		elif len(args) > 1: # if parameters are given with command
+		elif len(args) > 0: # if parameters are given with command
 			args = list(args)
-			filename = self.set_fp(args[0])
-			self.set_plotType(args[1])
-			self.set_deltaT(args[2])
-			self.set_int_fields('simulationTime', args[3])
-			self.set_int_fields('alongStrike', args[4])
-			self.set_int_fields('downDip', args[5])
-			self.check_size(filename)
-			self.set_int_fields('stepAlongStrike', args[6])
-			self.set_int_fields('stepDownDip', args[7])
-			self.set_mag(args[8])
-			if len(self.magSelect) == 1:
-				self.set_magnitude(args[9])
-				del args[9]
+			try:
+				filename = self.set_fp(args[0])
+				self.set_plotType(args[1])
+				self.set_deltaT(args[2])
+				self.set_int_fields('simulationTime', args[3])
+				self.set_int_fields('alongStrike', args[4])
+				self.set_int_fields('downDip', args[5])
+				self.check_size(filename)
+				self.set_int_fields('stepAlongStrike', args[6])
+				self.set_int_fields('stepDownDip', args[7])
+				self.set_mag(args[8])
+				if len(self.magSelect) == 1:
+					self.set_magnitude(args[9])
+					del args[9]
 
 
-			self.set_scale(args[9])
-			self.set_cum(args[10])
-			self.set_snap(args[11])
-			if self.snapshots == 'm':
-				self.set_numsnap(args[12])
-				del args[12]
+				self.set_scale(args[9])
+				self.set_cum(args[10])
+				self.set_snap(args[11])
+				if self.snapshots == 'm':
+					self.set_numsnap(args[12])
+					del args[12]
 
-			self.set_bar(args[12])
-			if self.barChoice:
-				print args[13:15]
-				self.set_min_max(args[13:15])
-				del args[13:15]
+				self.set_bar(args[12])
+				if self.barChoice:
+					print args[13:15]
+					self.set_min_max(args[13:15])
+					del args[13:15]
 
-			self.set_colors(args[13])
-			return
-
-		else:
-			print "[ERROR]: invalid parameters."
-			sys.exit()
-
+				self.set_colors(args[13])
+			except IndexError:
+				print "[ERROR]: invalid parameters."
+				sys.exit()
 	# end of __init__
 
 	def read_parameter(self, filename):
@@ -366,7 +359,7 @@ class Input(object):
 			# TODO
 		else:
 			# TODO: check existence of color map
-			self.colorChoice = colorChoice
+			self.colorMap = colorChoice
 			return True
 	# end of set_colors
 
@@ -376,29 +369,6 @@ class Input(object):
 			colorChoice = raw_input("== Enter a colormap or the path to custom color file: ")
 			colorChoice = self.set_colors(colorChoice)
 	# end of get_colors
-
-
-
-
-
-	# def get_color(self):
-	# 	choice_list1 = ['color map', 'map']
-	# 	choice_list2 = ['custom', 'colors', 'custom colors']
-	# 	while True:
-	# 		colorChoice = raw_input("== Use a color map or custom colors? ").lower()
-	# 		if colorChoice in choice_list1: # choose a color map
-	# 			self.colorChoice = 'm'
-	# 			self.colorMap = raw_input("== Enter the colormap for the plot: ")
-	# 			return
-	# 		elif colorChoice in choice_list2: # choose custom colors
-	# 			self.colorChoice = 'c'
-	# 			self.userColor1 = raw_input("== Enter the first color: ")
-	# 			self.userColor2 = raw_input("== Enter the second color: ")
-	# 			self.userColor3 = raw_input("== Enter the third color: ")
-	# 			return
-	# 		else:
-	# 			print "[ERROR]: invalid inputs; choose 'map' or 'custom'."
-	# end of get_color
 
 
 	def check_size(self, filename):

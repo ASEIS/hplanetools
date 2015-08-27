@@ -64,13 +64,6 @@ def zero_matrix(stepAlongStrike, alongStrike, stepDownDip, downDip):
 # end of init_peak
 
 def plot(peak, userInput, index):
-	# if userInput.colorChoice == 'c':
-	# 	c = colors.ColorConverter().to_rgb
-	# 	userInput.colorMap = make_colormap(
-	# 	[c(userInput.userColor1), c(userInput.userColor2), 0.5,
-	# 	c(userInput.userColor2), c(userInput.userColor3), 1,
-	# 	c(userInput.userColor3)])
-
 	if userInput.barMin != 0.0 and userInput.barMax != 0.0:
 		im = plt.imshow(peak, vmin=userInput.barMin,
 			vmax=userInput.barMax, cmap=userInput.colorMap)

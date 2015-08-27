@@ -1,1 +1,1 @@
-planedisplacements.0 d 0.025 100 136 181 1000 1000 y linear n multiple 5 yes 0 1 map hot
+planedisplacements.0 v 0.025 100 136 181 1000 1000 x yes log yes s no hot
