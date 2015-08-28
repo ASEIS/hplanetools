@@ -4,6 +4,8 @@
 # ==========================================
 import os
 import sys
+from pylab import *
+from htools import *
 class Input(object):
 	def __init__(self, *args):
 		self.fp = ""
@@ -354,9 +356,11 @@ class Input(object):
 	# end of get_min_max
 
 	def set_colors(self, colorChoice):
-		if colorChoice.endswith('.'):
-			pass
-			# TODO
+		if colorChoice.endswith('.cpt'):
+			cdict = gmtColormap(colorChoice)
+			cus_cmap = matplotlib.colors.LinearSegmentedColormap('custom_colormap',cdict,256)
+			self.colorMap = cus_cmap
+			return True
 		else:
 			# TODO: check existence of color map
 			self.colorMap = colorChoice

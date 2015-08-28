@@ -69,7 +69,6 @@ def plot(peak, userInput, index):
 			vmax=userInput.barMax, cmap=userInput.colorMap)
 	else:
 		im = plt.imshow(peak, cmap=userInput.colorMap)
-
 	# im = plt.imshow(peak)
 
 	plt.axis('off')
