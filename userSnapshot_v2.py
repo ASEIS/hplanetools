@@ -64,7 +64,7 @@ def zero_matrix(stepAlongStrike, alongStrike, stepDownDip, downDip):
 # end of init_peak
 
 def plot(peak, userInput, index):
-	if userInput.barMin != 0.0 and userInput.barMax != 0.0:
+	if userInput.barChoice == True:
 		im = plt.imshow(peak, vmin=userInput.barMin,
 			vmax=userInput.barMax, cmap=userInput.colorMap)
 	else:
@@ -79,14 +79,52 @@ def plot(peak, userInput, index):
 	plt.ylabel('Y')
 	plt.suptitle('t = ' + (str)(index*userInput.numSnapshots), fontsize=20)
 	plt.axis('scaled')
-	saveImage(index, userInput.plotType)
+	saveImage(userInput, index)
 	plt.show()
 # end of plot
 
-def saveImage(index, plotType):
-	type_dict = {'a': 'acceleration', 'v': 'velocity', 'd': 'displacement'}
-	plt.savefig(type_dict[plotType] + str(index*userInput.numSnapshots) + ".png")
+def saveImage(userInput, index):
+	filename = gen_fileName(userInput, index, 'png')
+	plt.savefig(filename)
 # end of saveImage
+
+def gen_fileName(userInput, index, fileType):
+	"""define filename based on user's inputs"""
+	type_dict = {'a':'acc', 'v':'vel', 'd': 'dis'}
+	mag_dict = {True: '-mag', False: ''}
+	cum_dict = {True: '-cum', False: ''}
+
+	if len(userInput.magSelect) == 1:
+		magSelect = userInput.magSelect[0] + mag_dict[userInput.magnitude]
+	else:
+		magSelect = ''.join(userInput.magSelect)
+	filename = type_dict[userInput.plotType] + '-' + magSelect + cum_dict[userInput.cumulative] + '-' + str(index*userInput.numSnapshots) + 's' + '.' + fileType
+
+	return filename
+# end of gen_fileName
+
+def saveDat(userInput, plotData, index):
+	"""print the data used to plot in a separate file"""
+	filename = gen_fileName(userInput, index, 'dat')
+
+	try:
+		f = open(filename, 'w')
+	except IOError, e:
+		print e
+
+	descriptor = '{:>12}'*2 + '{:>12.7f}' + '\n'
+	x = np.arange(0, userInput.downDip*userInput.stepDownDip, userInput.stepDownDip, dtype=np.int)
+	for i in range(0, len(plotData)):
+		y = np.empty(len(plotData[i]), dtype = np.int)
+		y.fill(i*userInput.stepAlongStrike)
+		values = plotData[i]
+		for c0, c1, c2 in zip(x, y, values):
+			f.write(descriptor.format(c0, c1, c2))
+	f.close()
+# end of printDat
+
+def notSaveDat(userInput, plotData, index):
+	pass
 
 def signed(dis):
 	return dis
@@ -170,6 +208,11 @@ def userSnapshot(userInput):
 	else:
 		process_dict['cum'] = notCum
 
+	if userInput.printDat:
+		process_dict['save'] = saveDat
+	else:
+		process_dict['save'] = notSaveDat
+
 
 	plotType_dict = {}
 	index = 0
@@ -184,6 +227,7 @@ def userSnapshot(userInput):
 		if snapshots == 'm' and ((i*deltaT)%numSnapshots == 0):
 			index += 1
 			plot(peak, userInput, index)
+			process_dict['save'](userInput, peak, index)
 
 		# showing progress on terminal
 		percent = float(i)/runtime
@@ -193,9 +237,10 @@ def userSnapshot(userInput):
 		sys.stdout.flush()
 
 
-	# plotting cumulative values
+	# plotting only cumulative values
 	if snapshots == 's':
 		plot(peak, userInput, 0)
+		process_dict['save'](userInput, peak, 0)
 	sys.stdout.write('\n')
 # end of userSnapshot
 

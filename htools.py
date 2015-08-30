@@ -1,14 +1,8 @@
 #!/usr/bin/env python
 import numpy as N
-from pylab import *
 
 def gmtColormap(fileName):
       import colorsys
-      # if type(GMTPath) == type(None):
-      #     # filePath = "/usr/local/cmaps/"+ fileName+".cpt"
-      #     filePath = fileName
-      # else:
-      #     filePath = GMTPath+"/"+ fileName +".cpt"
       try:
           f = open(fileName)
       except:

@@ -19,6 +19,7 @@ class Input(object):
 		self.snapshots, self.numSnapshots = 's', 0
 		self.barChoice, self.barMin, self.barMax = False, 0.0, 0.0
 		self.colorMap = 'hot'
+		self.printDat = False
 
 		if len(args) == 1:
 			args = self.read_parameter(args[0])
@@ -48,6 +49,7 @@ class Input(object):
 			if self.barChoice:
 				self.get_min_max()
 			self.get_colors()
+			self.get_printDat()
 
 		elif len(args) > 0: # if parameters are given with command
 			args = list(args)
@@ -76,11 +78,11 @@ class Input(object):
 
 				self.set_bar(args[12])
 				if self.barChoice:
-					print args[13:15]
 					self.set_min_max(args[13:15])
 					del args[13:15]
 
 				self.set_colors(args[13])
+				self.set_printDat(args[14])
 			except IndexError:
 				print "[ERROR]: invalid parameters."
 				sys.exit()
@@ -207,13 +209,7 @@ class Input(object):
 			magSelect = self.set_mag(magSelect)
 
 	def set_magnitude(self, magnitude):
-		bool_dict = {'y':True, 'n':False}
-		if magnitude[0] in bool_dict.keys():
-			self.magnitude = bool_dict[magnitude[0]]
-			return True
-		else:
-			print "[ERROR]: invalid choice for plotting magnitude."
-			return ''
+		return self.check_bool('magnitude', magnitude)
 	# end of set_magnitude
 
 	def get_magnitude(self):
@@ -224,7 +220,7 @@ class Input(object):
 			m = self.set_magnitude(m)
 
 	def set_scale(self, scale):
-		scale_list = ["linear", "log", "logarithmic"]
+		scale_list = ["lin", "linear", "log", "logarithmic"]
 		if scale in scale_list:
 			self.scale = scale
 			return scale
@@ -243,17 +239,7 @@ class Input(object):
 	# end of get_scale
 
 	def set_cum(self, cum):
-		bool_dict = {'y':True, 'n':False}
-		if cum:
-			if cum[0] in bool_dict.keys():
-				self.cumulative = bool_dict[cum[0]]
-				return True
-			else:
-				print "[ERROR]: invalid input."
-				return False
-		else:
-			print "[ERROR]: missing cumulative choice."
-			return False
+		return self.check_bool('cumulative', cum)
 	# end of set_cum
 
 
@@ -306,23 +292,13 @@ class Input(object):
 	# end of get_numsnap
 
 	def set_bar(self, barChoice):
-		bool_dict = {'y':True, 'n':False}
-		if barChoice:
-			if barChoice[0] in bool_dict.keys():
-				self.barChoice = bool_dict[barChoice[0]]
-				return True
-			else:
-				print "[ERROR]: invalid barChoice."
-				return False
-		else:
-			print "[ERROR]: missing barChoice."
-			return False
+		return self.check_bool('barChoice', barChoice)
 	# end of set_bar
 
 	def get_bar(self):
 		barChoice = ''
 		while not barChoice:
-			barChoice = raw_input("== Set colorbar minimum and maximum: (y/n) ").lower()
+			barChoice = raw_input("== Set colorbar minimum and maximum (y/n): ").lower()
 			barChoice = self.set_bar(barChoice)
 	# end of get_bar
 
@@ -374,6 +350,31 @@ class Input(object):
 			colorChoice = self.set_colors(colorChoice)
 	# end of get_colors
 
+	def set_printDat(self, printDat):
+		return self.check_bool('printDat', printDat)
+	# end of set_printDat
+
+	def get_printDat(self):
+		printDat = ''
+		while not printDat:
+			printDat = raw_input("== Would you like the print the matrix data (y/n): ")
+			printDat = self.set_printDat(printDat)
+	# end of get_printDat
+
+	def check_bool(self, varName, value):
+		# check the user inputs associated with boolean values
+		bool_dict = {'y':True, 'n':False}
+		if value:
+			if value[0] in bool_dict.keys():
+				self.__dict__[varName] = bool_dict[value[0]]
+				return True
+			else:
+				print "[ERROR]: invalid choice for " + varName + "."
+				return False
+		else:
+			print "[ERROR]: missing choice for " + varName + "."
+			return False
+	# end of check_bool
 
 	def check_size(self, filename):
 		"""compare the size of given file and the estimated size"""
