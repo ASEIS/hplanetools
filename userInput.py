@@ -13,7 +13,7 @@ class Input(object):
 		self.deltaT = 0.0
 		self.simulationTime, self.alongStrike, self.downDip, self.stepAlongStrike, self.stepDownDip = 0, 0, 0, 0, 0
 		self.magSelect, self.magnitude = [], False
-		self.scale = ""
+		# self.scale = ""
 		self.cumulative = True
 		# self.snapshots, self.numSnapshots = "m", 5
 		self.snapshots, self.numSnapshots = 's', 0
@@ -40,7 +40,7 @@ class Input(object):
 			if len(self.magSelect) == 1:
 				self.get_magnitude()
 
-			self.get_scale()
+			# self.get_scale()
 			self.get_cum()
 			self.get_snap()
 			if self.snapshots == 'm':
@@ -69,20 +69,20 @@ class Input(object):
 					del args[9]
 
 
-				self.set_scale(args[9])
-				self.set_cum(args[10])
-				self.set_snap(args[11])
+				# self.set_scale(args[9])
+				self.set_cum(args[9])
+				self.set_snap(args[10])
 				if self.snapshots == 'm':
-					self.set_numsnap(args[12])
-					del args[12]
+					self.set_numsnap(args[11])
+					del args[11]
 
-				self.set_bar(args[12])
+				self.set_bar(args[11])
 				if self.barChoice:
-					self.set_min_max(args[13:15])
-					del args[13:15]
+					self.set_min_max(args[12:14])
+					del args[12:14]
 
-				self.set_colors(args[13])
-				self.set_printDat(args[14])
+				self.set_colors(args[12])
+				self.set_printDat(args[13])
 			except IndexError:
 				print "[ERROR]: invalid parameters."
 				sys.exit()
@@ -388,12 +388,58 @@ class Input(object):
 	# end of check_size
 # end of input
 
-if __name__ == "__main__":
-	if len(sys.argv) > 1:
-		argument = tuple(sys.argv[1:])
-		i = Input(*argument)
-	else:
-		i = Input()
 
-	print i.__dict__
+class DatInput(Input):
+	"""subclass of Input; used in datToPlot program."""
+	def __init__(self, *args):
+		# super(DatInput, self).get_deltaT()
+		# super(DatInput, self).get_int('simulationTime')
+		if len(args) == 0:
+			self.get_path()
+			super(DatInput, self).get_int('alongStrike')
+			super(DatInput, self).get_int('downDip')
+			super(DatInput, self).get_snap()
+			if self.snapshots == 'm':
+				super(DatInput, self).get_numsnap()
+			super(DatInput, self).get_colors()
+		else:
+			args = list(args)
+			try:
+				self.set_path(args[0])
+				super(DatInput, self).set_int_fields('alongStrike', args[1])
+				super(DatInput, self).set_int_fields('downDip', args[2])
+				super(DatInput, self).set_snap(args[3])
+				if self.snapshots == 'm':
+					super(DatInput, self).set_numsnap(args[4])
+					del args[4]
+				super(DatInput, self).set_colors(args[4])
+			except IndexError:
+				print "[ERROR]: invalid parameters."
+				sys.exit()
+	# end of __init__
+
+	def set_path(self, path):
+		# TODO: add check
+		self.path = path
+	# end of set_path
+
+	def get_path(self):
+		path = ''
+		while not path:
+			path = raw_input("== Enter the path to data file(s): ")
+			self.set_path(path)
+	# end of get_path
+# end of DatInput class
+
+
+if __name__ == "__main__":
+	# if len(sys.argv) > 1:
+	# 	argument = tuple(sys.argv[1:])
+	# 	i = Input(*argument)
+	# else:
+	# 	i = Input()
+
+	# print i.__dict__
+	d = DatInput()
+	print d.__dict__
 

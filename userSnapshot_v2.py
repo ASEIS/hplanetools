@@ -98,7 +98,10 @@ def gen_fileName(userInput, index, fileType):
 		magSelect = userInput.magSelect[0] + mag_dict[userInput.magnitude]
 	else:
 		magSelect = ''.join(userInput.magSelect)
-	filename = type_dict[userInput.plotType] + '-' + magSelect + cum_dict[userInput.cumulative] + '-' + str(index*userInput.numSnapshots) + 's' + '.' + fileType
+	if userInput.snapshots == 's':
+		filename = type_dict[userInput.plotType] + '-' + magSelect + cum_dict[userInput.cumulative] + '-single' + '.' + fileType
+	elif userInput.snapshots == 'm':
+		filename = type_dict[userInput.plotType] + '-' + magSelect + cum_dict[userInput.cumulative] + '-' + str(index*userInput.numSnapshots) + 's' + '.' + fileType
 
 	return filename
 # end of gen_fileName
