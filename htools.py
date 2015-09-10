@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import numpy as N
+import numpy as np
 
 def gmtColormap(fileName):
       import colorsys
@@ -43,10 +43,10 @@ def gmtColormap(fileName):
       b.append(btemp)
 
       nTable = len(r)
-      x = N.array( x , float)
-      r = N.array( r , float)
-      g = N.array( g , float)
-      b = N.array( b , float)
+      x = np.array( x , float)
+      r = np.array( r , float)
+      g = np.array( g , float)
+      b = np.array( b , float)
       if colorModel == "HSV":
          for i in range(r.shape[0]):
              rr,gg,bb = colorsys.hsv_to_rgb(r[i]/360.,g[i],b[i])
@@ -75,3 +75,13 @@ def gmtColormap(fileName):
 # my_cmap = matplotlib.colors.LinearSegmentedColormap('my_colormap',cdict,256)
 # pcolor(rand(10,10),cmap=my_cmap)
 # colorbar()
+
+def integrate(data, dt):
+  newdata = cumtrapz(data, dx = dt, initial=0) + data[0]*dt/2.0
+  return newdata
+
+def derivative(data, dt):
+  """compute derivative of an numpy."""
+  newdata = np.insert(data, 0, 0)
+  newdata = np.diff(newdata)/dt
+  return newdata
