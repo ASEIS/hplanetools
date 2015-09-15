@@ -5,9 +5,12 @@
 # Version: Sep 10, 2015
 #  ============================================================================
 #  */
+from __future__ import division
 import sys
 import numpy as np
 from htools import *
+from scipy import interpolate
+# from scipy.interpolate import griddata
 
 def readFile(fp, downDip, alongStrike):
 	"""read the binary file to get the X, Y, Z values and reshape each
@@ -29,6 +32,22 @@ def readFile(fp, downDip, alongStrike):
 	# dis = Data('d', disX, disY, disZ)
 	return disX, disY, disZ
 	# return dis
+
+def bilinear_interp(x, y, data):
+	"""perform bilinear interpolation"""
+	values = np.array([], float)
+	x0 = int(x)
+	x1 = x0+1
+	y0 = int(y)
+	y1 = y0+1
+	x_coor = np.array([x0, x1, x0, x1], dtype = int)
+	y_coor = np.array([y0, y0, y1, y1], dtype = int)
+	for i in range(0, x_coor.size):
+		values = np.append(values, data[x_coor[i], y_coor[i]])
+	f = interpolate.interp2d(x_coor, y_coor, values, kind='linear')
+	new_value = f(x, y)
+	return new_value
+# end of bilinear_interp
 
 def print_her(filename, dt, disData, velData, accData):
 	filename = filename.split('.')[0]+'.her'
@@ -79,8 +98,8 @@ if __name__ == "__main__":
 	stepDownDip = 1000
 
 	# random coordinates to test
-	x = 118000
-	y = 120000
+	x = 118524
+	y = 123356
 
 	index_x = x/stepAlongStrike
 	index_y = y/stepDownDip
@@ -97,9 +116,9 @@ if __name__ == "__main__":
 	disZ = np.array([],float)
 	for i in range(0, runtime):
 		dataX, dataY, dataZ = readFile(fp, downDip, alongStrike)
-		disX = np.append(disX, dataX[index_x, index_y])
-		disY = np.append(disY, dataY[index_x, index_y])
-		disZ = np.append(disZ, dataZ[index_x, index_y])
+		disX = np.append(disX, bilinear_interp(index_x, index_y, dataX))
+		disY = np.append(disY, bilinear_interp(index_x, index_y, dataY))
+		disZ = np.append(disZ, bilinear_interp(index_x, index_y, dataZ))
 
 		# showing progress on terminal
 		percent = float(i)/runtime
