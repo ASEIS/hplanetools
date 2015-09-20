@@ -10,6 +10,7 @@ import sys
 import numpy as np
 from htools import *
 from scipy import interpolate
+from userInput import *
 # from scipy.interpolate import griddata
 
 def readFile(fp, downDip, alongStrike):
@@ -88,27 +89,24 @@ def print_her(filename, dt, disData, velData, accData):
 
 
 if __name__ == "__main__":
-	# initialization
-	filename = 'planedisplacements.0'
-	simulationTime = 100
-	deltaT = 0.025
-	alongStrike = 136
-	downDip = 181
-	stepAlongStrike = 1000
-	stepDownDip = 1000
-
-	# random coordinates to test
-	x = 118524
-	y = 123356
+	if len(sys.argv) > 1:
+		argument = tuple(sys.argv[1:])
+		e = ExtractInput(*argument)
+	else:
+		e = ExtractInput()
+	fp = e.fp
+	simulationTime = e.simulationTime
+	deltaT = e.deltaT
+	alongStrike = e.alongStrike
+	downDip = e.downDip
+	stepAlongStrike = e.stepAlongStrike
+	stepDownDip = e.stepDownDip
+	x = e.x
+	y = e.y
 
 	index_x = x/stepAlongStrike
 	index_y = y/stepDownDip
 
-	# loading plane data file
-	try:
-		fp = open(filename, 'r')
-	except IOError:
-		print "[ERROR]: unable to load data file."
 
 	runtime = int(simulationTime/deltaT)
 	disX = np.array([],float)
@@ -135,6 +133,6 @@ if __name__ == "__main__":
 	accY = derivative(velY, deltaT)
 	accZ = derivative(velZ, deltaT)
 
-	print_her(filename, deltaT, [disX, disY, disZ], [velX, velY, velZ], [accX, accY, accZ])
+	print_her('planedisplacements.0', deltaT, [disX, disY, disZ], [velX, velY, velZ], [accX, accY, accZ])
 	sys.stdout.write('\n')
 # end of __main__

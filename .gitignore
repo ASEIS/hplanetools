@@ -2,3 +2,7 @@
 .idea
 *.pyc
 .DS_Store
+*.png
+*.dat
+*.0
+parameters

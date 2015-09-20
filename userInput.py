@@ -11,7 +11,7 @@ class Input(object):
 		self.fp = ""
 		self.plotType = ""
 		self.deltaT = 0.0
-		self.simulationTime, self.alongStrike, self.downDip, self.stepAlongStrike, self.stepDownDip = 0, 0, 0, 0, 0
+		self.simulationTime, self.alongStrike, self.downDip, self.stepAlongStrike, self.stepDownDip = 0.0, 0, 0, 0, 0
 		self.magSelect, self.magnitude = [], False
 		# self.scale = ""
 		self.cumulative = True
@@ -29,7 +29,8 @@ class Input(object):
 			filename = self.get_fp()
 			self.get_plotType()
 			self.get_deltaT()
-			self.get_int('simulationTime')
+			# self.get_int('simulationTime')
+			self.get_sim_time()
 			self.get_int('alongStrike')
 			self.get_int('downDip')
 			self.check_size(filename)
@@ -57,7 +58,8 @@ class Input(object):
 				filename = self.set_fp(args[0])
 				self.set_plotType(args[1])
 				self.set_deltaT(args[2])
-				self.set_int_fields('simulationTime', args[3])
+				# self.set_int_fields('simulationTime', args[3])
+				self.set_sim_time(args[3])
 				self.set_int_fields('alongStrike', args[4])
 				self.set_int_fields('downDip', args[5])
 				self.check_size(filename)
@@ -173,6 +175,22 @@ class Input(object):
 			return 0
 	# end of set_int_fields
 
+	def get_sim_time(self):
+		sim = 0.0
+		while not sim:
+			sim = raw_input("== Enter the total simulation time: ")
+			sim = self.set_sim_time(sim)
+	# end of get_sim_time
+
+	def set_sim_time(self, sim):
+		try:
+			sim = float(sim)
+			self.simulationTime = sim
+			return True
+		except ValueError:
+			print "[ERROR]: invalid value for simulationTime."
+			return False
+	# end of set_sim_time
 
 	def get_int(self, varName):
 		"""get simulationTime, alongStrike, downDip, stepAlongStrike, and stepDownDip from user."""
@@ -431,15 +449,65 @@ class DatInput(Input):
 	# end of get_path
 # end of DatInput class
 
+class ExtractInput(Input):
+	"""subclass of Input; used in extractHer program"""
+	def __init__(self, *args):
+		if len(args) == 0:
+			filename = super(ExtractInput, self).get_fp()
+			super(ExtractInput, self).get_deltaT()
+			super(ExtractInput, self).get_sim_time()
+			super(ExtractInput, self).get_int('alongStrike')
+			super(ExtractInput, self).get_int('downDip')
+			super(ExtractInput, self).check_size(filename)
+			super(ExtractInput, self).get_int('stepAlongStrike')
+			super(ExtractInput, self).get_int('stepDownDip')
+			self.get_coor('x')
+			self.get_coor('y')
+		else:
+			args = list(args)
+			try:
+				filename = super(ExtractInput, self).set_fp(args[0])
+				super(ExtractInput, self).set_deltaT(args[1])
+				super(ExtractInput, self).set_sim_time(args[2])
+				super(ExtractInput, self).set_int_fields('alongStrike', args[3])
+				super(ExtractInput, self).set_int_fields('downDip', args[4])
+				super(ExtractInput, self).check_size(filename)
+				super(ExtractInput, self).set_int_fields('stepAlongStrike', args[5])
+				super(ExtractInput, self).set_int_fields('stepDownDip', args[6])
+				self.set_coor('x', args[7])
+				self.set_coor('y', args[8])
+			except IndexError:
+				print "[ERROR]: invalid parameters."
+				sys.exit()
+	# end of __init__
+
+	def set_coor(self, flag, coordinate):
+		try:
+			self.__dict__[flag] = float(coordinate)
+			return True
+		except ValueError:
+			print "[ERROR]: invalid coordinate."
+			return False
+	# end of set_coor
+
+	def get_coor(self, flag):
+		coordinate = False
+		while not coordinate:
+			coordinate = raw_input("== Enter the " + flag + " coordinate of station: ")
+			coordinate = self.set_coor(flag, coordinate)
+	# end of get_coor
+
+
 
 if __name__ == "__main__":
-	# if len(sys.argv) > 1:
-	# 	argument = tuple(sys.argv[1:])
-	# 	i = Input(*argument)
-	# else:
-	# 	i = Input()
+	if len(sys.argv) > 1:
+		argument = tuple(sys.argv[1:])
+		i = ExtractInput(*argument)
+	else:
+		i = ExtractInput()
 
 	# print i.__dict__
-	d = DatInput()
-	print d.__dict__
+	# d = DatInput()
+	# e = ExtractInput()
+	print i.__dict__
 
