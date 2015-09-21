@@ -30,9 +30,37 @@ def readFile(fp, downDip, alongStrike):
 	disY = disY.transpose()
 	disZ = disZ.transpose()
 
-	# dis = Data('d', disX, disY, disZ)
 	return disX, disY, disZ
-	# return dis
+
+def load_by_index(fp, alongStrike, downDip, x_coor, y_coor):
+	"""load plane data file, return the values of four points around the station"""
+	dis = np.fromfile(fp, np.float64, downDip*alongStrike*3)
+	values_x, values_y, values_z = np.array([], float), np.array([], float), np.array([], float)
+	for i in range(0, x_coor.size):
+		x = x_coor[i]
+		y = y_coor[i]
+		index_x = (downDip*x+y)*3 + 0
+		index_y = (downDip*x+y)*3 + 1
+		index_z = (downDip*x+y)*3 + 2
+
+		values_x = np.append(values_x, dis[index_x])
+		values_y = np.append(values_y, dis[index_y])
+		values_z = np.append(values_z, dis[index_z])
+
+
+	# index_x = (downDip*x+y)*3 + 0
+	# index_y = (downDip*x+y)*3 + 1
+	# index_z = (downDip*x+y)*3 + 2
+	# X = dis[::3] #take every third element starting at index 0
+	# Y = dis[1::3] #...starting at index 1
+	# Z = dis[2::3] #...starting at index 2
+
+	# # index = (alongStrike*y+x)
+	# index = (downDip*x+y)
+
+	# return X[index], Y[index], Z[index]
+	# return dis[index_x], dis[index_y], dis[index_z]
+	return values_x, values_y, values_z
 
 def bilinear_interp(x, y, data):
 	"""perform bilinear interpolation"""
@@ -107,13 +135,39 @@ if __name__ == "__main__":
 	index_x = x/stepAlongStrike
 	index_y = y/stepDownDip
 
+	# get the coordinates of points around station for bilinear interpolation
+	x0 = int(index_x)
+	x1 = x0+1
+	y0 = int(index_y)
+	y1 = y0+1
+	x_coor = np.array([x0, x1, x0, x1], dtype = int)
+	y_coor = np.array([y0, y0, y1, y1], dtype = int)
+
 
 	runtime = int(simulationTime/deltaT)
 	disX = np.array([],float)
 	disY = np.array([],float)
 	disZ = np.array([],float)
 	for i in range(0, runtime):
+		# values_x, values_y, values_z = load_by_index(fp, alongStrike, downDip, x_coor, y_coor)
+		# fx = interpolate.interp2d(x_coor, y_coor, values_x, kind='linear')
+		# fy = interpolate.interp2d(x_coor, y_coor, values_y, kind='linear')
+		# fz = interpolate.interp2d(x_coor, y_coor, values_z, kind='linear')
+		# disX = np.append(disX, fx(index_x, index_y))
+		# disY = np.append(disY, fy(index_x, index_y))
+		# disZ = np.append(disZ, fz(index_x, index_y))
+
+
+		# dataX, dataY, dataZ = load_by_index(fp, alongStrike, downDip, index_x, index_y)
+		# disX = np.append(disX, dataX)
+		# disY = np.append(disY, dataY)
+		# disZ = np.append(disZ, dataZ)
+
 		dataX, dataY, dataZ = readFile(fp, downDip, alongStrike)
+		# disX = np.append(disX, dataX[index_x, index_y])
+		# disY = np.append(disY, dataY[index_x, index_y])
+		# disZ = np.append(disZ, dataZ[index_x, index_y])
+
 		disX = np.append(disX, bilinear_interp(index_x, index_y, dataX))
 		disY = np.append(disY, bilinear_interp(index_x, index_y, dataY))
 		disZ = np.append(disZ, bilinear_interp(index_x, index_y, dataZ))
