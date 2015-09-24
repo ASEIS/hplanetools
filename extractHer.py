@@ -32,35 +32,46 @@ def readFile(fp, downDip, alongStrike):
 
 	return disX, disY, disZ
 
-def load_by_index(fp, alongStrike, downDip, x_coor, y_coor):
-	"""load plane data file, return the values of four points around the station"""
-	dis = np.fromfile(fp, np.float64, downDip*alongStrike*3)
+# def load_by_index(fp, alongStrike, downDip, x_coor, y_coor):
+# 	"""load plane data file, return the values of four points around the station"""
+# 	dis = np.fromfile(fp, np.float64, downDip*alongStrike*3)
+# 	values_x, values_y, values_z = np.array([], float), np.array([], float), np.array([], float)
+# 	for i in range(0, len(x_coor)):
+# 		x = x_coor[i]
+# 		y = y_coor[i]
+# 		index_x = (downDip*x+y)*3 + 0
+# 		index_y = (downDip*x+y)*3 + 1
+# 		index_z = (downDip*x+y)*3 + 2
+
+# 		values_x = np.append(values_x, dis[index_x])
+# 		values_y = np.append(values_y, dis[index_y])
+# 		values_z = np.append(values_z, dis[index_z])
+# 	return values_x, values_y, values_z
+
+def load_by_index(fp, alongStrike, downDip, x_coor, y_coor, num_layers):
+	"""load plane data file by index, return the values of four points around the station"""
+	dis = np.array([], float)
 	values_x, values_y, values_z = np.array([], float), np.array([], float), np.array([], float)
-	for i in range(0, x_coor.size):
+	base = alongStrike*downDip*3*num_layers # number of data in past layers
+
+	for i in range(0, len(x_coor)):
 		x = x_coor[i]
 		y = y_coor[i]
-		index_x = (downDip*x+y)*3 + 0
-		index_y = (downDip*x+y)*3 + 1
-		index_z = (downDip*x+y)*3 + 2
 
-		values_x = np.append(values_x, dis[index_x])
-		values_y = np.append(values_y, dis[index_y])
-		values_z = np.append(values_z, dis[index_z])
+		# index = number of data in past layers + postion in current layer
+		index = base + (downDip*x+y)*3
+		offset = index*8 # offset measured in byte
+		try:
+			dis = np.memmap(fp, np.float64, 'r', offset, (3)) # load three numbers for x/y/z
+		except ValueError:
+			print "[ERROR]: unable to load file."
+			sys.exit()
 
-
-	# index_x = (downDip*x+y)*3 + 0
-	# index_y = (downDip*x+y)*3 + 1
-	# index_z = (downDip*x+y)*3 + 2
-	# X = dis[::3] #take every third element starting at index 0
-	# Y = dis[1::3] #...starting at index 1
-	# Z = dis[2::3] #...starting at index 2
-
-	# # index = (alongStrike*y+x)
-	# index = (downDip*x+y)
-
-	# return X[index], Y[index], Z[index]
-	# return dis[index_x], dis[index_y], dis[index_z]
+		values_x = np.append(values_x, dis[0])
+		values_y = np.append(values_y, dis[1])
+		values_z = np.append(values_z, dis[2])
 	return values_x, values_y, values_z
+# end of load_by_index
 
 def bilinear_interp(x, y, data):
 	"""perform bilinear interpolation"""
@@ -149,28 +160,20 @@ if __name__ == "__main__":
 	disY = np.array([],float)
 	disZ = np.array([],float)
 	for i in range(0, runtime):
-		# values_x, values_y, values_z = load_by_index(fp, alongStrike, downDip, x_coor, y_coor)
-		# fx = interpolate.interp2d(x_coor, y_coor, values_x, kind='linear')
-		# fy = interpolate.interp2d(x_coor, y_coor, values_y, kind='linear')
-		# fz = interpolate.interp2d(x_coor, y_coor, values_z, kind='linear')
-		# disX = np.append(disX, fx(index_x, index_y))
-		# disY = np.append(disY, fy(index_x, index_y))
-		# disZ = np.append(disZ, fz(index_x, index_y))
+		values_x, values_y, values_z = load_by_index(fp, alongStrike, downDip, x_coor, y_coor, i)
+		fx = interpolate.interp2d(x_coor, y_coor, values_x, kind='linear')
+		fy = interpolate.interp2d(x_coor, y_coor, values_y, kind='linear')
+		fz = interpolate.interp2d(x_coor, y_coor, values_z, kind='linear')
+		disX = np.append(disX, fx(index_x, index_y))
+		disY = np.append(disY, fy(index_x, index_y))
+		disZ = np.append(disZ, fz(index_x, index_y))
 
 
-		# dataX, dataY, dataZ = load_by_index(fp, alongStrike, downDip, index_x, index_y)
-		# disX = np.append(disX, dataX)
-		# disY = np.append(disY, dataY)
-		# disZ = np.append(disZ, dataZ)
-
-		dataX, dataY, dataZ = readFile(fp, downDip, alongStrike)
-		# disX = np.append(disX, dataX[index_x, index_y])
-		# disY = np.append(disY, dataY[index_x, index_y])
-		# disZ = np.append(disZ, dataZ[index_x, index_y])
-
-		disX = np.append(disX, bilinear_interp(index_x, index_y, dataX))
-		disY = np.append(disY, bilinear_interp(index_x, index_y, dataY))
-		disZ = np.append(disZ, bilinear_interp(index_x, index_y, dataZ))
+		# load the whole data; save for testing
+		# dataX, dataY, dataZ = readFile(fp, downDip, alongStrike)
+		# disX = np.append(disX, bilinear_interp(index_x, index_y, dataX))
+		# disY = np.append(disY, bilinear_interp(index_x, index_y, dataY))
+		# disZ = np.append(disZ, bilinear_interp(index_x, index_y, dataZ))
 
 		# showing progress on terminal
 		percent = float(i)/runtime
