@@ -90,7 +90,6 @@ def bilinear_interp(x, y, data):
 # end of bilinear_interp
 
 def print_her(filename, dt, disData, velData, accData):
-	filename = filename.split('.')[0]+'.her'
 	try:
 		f = open(filename, 'w')
 	except IOError, e:
@@ -124,6 +123,7 @@ def print_her(filename, dt, disData, velData, accData):
 	for c0, c1, c2, c3, c4, c5, c6, c7, c8, c9 in zip(time, dis_x, dis_y, dis_z, vel_x, vel_y, vel_z, acc_x, acc_y, acc_z):
 		f.write(descriptor.format(c0, c1, c2, c3, c4, c5, c6, c7, c8, c9 ))
 	f.close()
+	print "*Generated hercules file at: " + filename
 # end of print_her
 
 
@@ -171,16 +171,18 @@ if __name__ == "__main__":
 
 		# load the whole data; save for testing
 		# dataX, dataY, dataZ = readFile(fp, downDip, alongStrike)
+
+		# disX = np.append(disX, dataX[int(index_x), int(index_y)])
+		# disY = np.append(disY, dataY[int(index_x), int(index_y)])
+		# disZ = np.append(disZ, dataZ[int(index_x), int(index_y)])
+
 		# disX = np.append(disX, bilinear_interp(index_x, index_y, dataX))
 		# disY = np.append(disY, bilinear_interp(index_x, index_y, dataY))
 		# disZ = np.append(disZ, bilinear_interp(index_x, index_y, dataZ))
 
 		# showing progress on terminal
-		percent = float(i)/runtime
-		hashes = '#'*int(round(percent*20))
-		spaces = ' '*(20-len(hashes))
-		sys.stdout.write("\rProgress: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
-		sys.stdout.flush()
+		show_progress(i, runtime)
+	sys.stdout.write('\n')
 
 	velX = derivative(disX, deltaT)
 	velY = derivative(disY, deltaT)
@@ -190,6 +192,5 @@ if __name__ == "__main__":
 	accY = derivative(velY, deltaT)
 	accZ = derivative(velZ, deltaT)
 
-	print_her('planedisplacements.0', deltaT, [disX, disY, disZ], [velX, velY, velZ], [accX, accY, accZ])
-	sys.stdout.write('\n')
+	print_her(e.out_path, deltaT, [disX, disY, disZ], [velX, velY, velZ], [accX, accY, accZ])
 # end of __main__

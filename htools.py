@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.mlab as ml
+import sys
 
 def gmtColormap(fileName):
       import colorsys
@@ -85,3 +88,26 @@ def derivative(data, dt):
   newdata = np.insert(data, 0, 0)
   newdata = np.diff(newdata)/dt
   return newdata
+
+def plot(data, cmap):
+  im = plt.imshow(data, cmap = cmap)
+  plt.axis('off')
+  plt.gca().invert_yaxis()
+
+  plt.colorbar(im)
+  plt.xlabel('X')
+  plt.ylabel('Y')
+  # plt.suptitle('t = ' + (str)(index), fontsize=20)
+  plt.axis('scaled')
+  plt.show()
+# end of plot
+
+def show_progress(i, num):
+  percent = float(i)/num
+  hashes = '#'*int(round(percent*20))
+  spaces = ' '*(20-len(hashes))
+  sys.stdout.write("\rProgress: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
+  sys.stdout.flush()
+
+
+

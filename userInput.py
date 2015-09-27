@@ -463,6 +463,7 @@ class ExtractInput(Input):
 			super(ExtractInput, self).get_int('stepDownDip')
 			self.get_coor('x')
 			self.get_coor('y')
+			self.get_out()
 		else:
 			args = list(args)
 			try:
@@ -476,6 +477,7 @@ class ExtractInput(Input):
 				super(ExtractInput, self).set_int_fields('stepDownDip', args[6])
 				self.set_coor('x', args[7])
 				self.set_coor('y', args[8])
+				self.set_out(args[9])
 			except IndexError:
 				print "[ERROR]: invalid parameters."
 				sys.exit()
@@ -496,6 +498,29 @@ class ExtractInput(Input):
 			coordinate = raw_input("== Enter the " + flag + " coordinate of station: ")
 			coordinate = self.set_coor(flag, coordinate)
 	# end of get_coor
+
+	def set_out(self, out_path):
+		if '/' in out_path:
+			tmp = out_path.split('/')
+			out_dir = '/'.join(tmp[:-1])
+			if os.path.exists(out_dir):
+				self.out_path = out_path
+				return True
+			else:
+				print "[ERROR]: invalid path; directory does not exist."
+				return False
+		else:
+			current = os.getcwd()
+			self.out_path = current + '/' + out_path
+			return True
+
+	def get_out(self):
+		out_path = ''
+		while not out_path:
+			out_path = raw_input("== Enter the complete path to output file: ")
+			output = self.set_out(out_path)
+	# end of get_out
+
 
 
 
