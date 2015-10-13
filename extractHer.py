@@ -11,7 +11,6 @@ import numpy as np
 from htools import *
 from scipy import interpolate
 from userInput import *
-# from scipy.interpolate import griddata
 
 def readFile(fp, downDip, alongStrike):
 	"""read the binary file to get the X, Y, Z values and reshape each
@@ -31,22 +30,6 @@ def readFile(fp, downDip, alongStrike):
 	disZ = disZ.transpose()
 
 	return disX, disY, disZ
-
-# def load_by_index(fp, alongStrike, downDip, x_coor, y_coor):
-# 	"""load plane data file, return the values of four points around the station"""
-# 	dis = np.fromfile(fp, np.float64, downDip*alongStrike*3)
-# 	values_x, values_y, values_z = np.array([], float), np.array([], float), np.array([], float)
-# 	for i in range(0, len(x_coor)):
-# 		x = x_coor[i]
-# 		y = y_coor[i]
-# 		index_x = (downDip*x+y)*3 + 0
-# 		index_y = (downDip*x+y)*3 + 1
-# 		index_z = (downDip*x+y)*3 + 2
-
-# 		values_x = np.append(values_x, dis[index_x])
-# 		values_y = np.append(values_y, dis[index_y])
-# 		values_z = np.append(values_z, dis[index_z])
-# 	return values_x, values_y, values_z
 
 def load_by_index(fp, alongStrike, downDip, x_coor, y_coor, num_layers):
 	"""load plane data file by index, return the values of four points around the station"""

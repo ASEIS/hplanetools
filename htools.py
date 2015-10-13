@@ -6,6 +6,7 @@ import sys
 
 def gmtColormap(fileName):
       import colorsys
+      """convert cpt file to color dictionary"""
       try:
           f = open(fileName)
       except:
@@ -89,20 +90,21 @@ def derivative(data, dt):
   newdata = np.diff(newdata)/dt
   return newdata
 
-def plot(data, cmap):
-  im = plt.imshow(data, cmap = cmap)
-  plt.axis('off')
-  plt.gca().invert_yaxis()
+# def plot(data, cmap):
+#   im = plt.imshow(data, cmap = cmap)
+#   plt.axis('off')
+#   plt.gca().invert_yaxis()
 
-  plt.colorbar(im)
-  plt.xlabel('X')
-  plt.ylabel('Y')
-  # plt.suptitle('t = ' + (str)(index), fontsize=20)
-  plt.axis('scaled')
-  plt.show()
-# end of plot
+#   plt.colorbar(im)
+#   plt.xlabel('X')
+#   plt.ylabel('Y')
+#   # plt.suptitle('t = ' + (str)(index), fontsize=20)
+#   plt.axis('scaled')
+#   plt.show()
+# # end of plot
 
 def show_progress(i, num):
+  # showing progress on terminal
   percent = float(i)/num
   hashes = '#'*int(round(percent*20))
   spaces = ' '*(20-len(hashes))
@@ -116,5 +118,42 @@ def dis_to_acc(dis, deltaT):
   return acc
 # end of dis_to_acc
 
+def saveDat(filename, dimensionX, spaceX, spaceY, plotData):
+  """print the response data in a separate file"""
+  try:
+    f = open(filename, 'w')
+  except IOError, e:
+    print e
+
+  descriptor = '{:>12}'*2 + '{:>12.7f}' + '\n'
+  x = np.arange(0, dimensionX+1, spaceX, dtype=np.int)
+  for i in range(0, len(plotData)):
+    y = np.empty(len(plotData[i]), dtype = np.int)
+    y.fill(i*spaceY)
+    values = plotData[i]
+    for c0, c1, c2 in zip(x, y, values):
+      f.write(descriptor.format(c0, c1, c2))
+  f.close()
+# end of saveDat
+
+def plot(data, userInput):
+  try:
+    if userInput.barChoice == True:
+      im = plt.imshow(data, vmin=userInput.barMin,
+        vmax=userInput.barMax, cmap=userInput.colorMap)
+    else:
+      im = plt.imshow(data, cmap=userInput.colorMap)
+  except AttributeError:
+    im = plt.imshow(data, cmap=userInput.colorMap)
+
+  plt.axis('off')
+  plt.gca().invert_yaxis()
+
+  plt.colorbar(im)
+  plt.xlabel('X')
+  plt.ylabel('Y')
+  plt.axis('scaled')
+  plt.show()
+# end of plot
 
 

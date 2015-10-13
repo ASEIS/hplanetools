@@ -9,8 +9,10 @@ import numpy as np
 import sys
 sys.path.insert(0, '/Users/kelicheng/seismtools') # insert the path to seismtools to import stools program.
 from stools import *
-from htools import *
-from userInput import *
+# from htools import *
+from htools import plot, saveDat, dis_to_acc, show_progress
+# from userInput import *
+from userInput import ResponseInput
 np.seterr(divide='ignore', invalid='ignore')
 
 def loadFile(fp, alongStrike, downDip, num_layers, x_coor, y_coor, size):
@@ -28,49 +30,25 @@ def loadFile(fp, alongStrike, downDip, num_layers, x_coor, y_coor, size):
 		sys.exit()
 # end of loadFile
 
-# def saveDat(userInput, plotData):
+# def saveDat(filename, dimensionX, spaceX, spaceY, plotData):
 #   """print the response data in a separate file"""
 #   try:
-#     f = open(userInput.out_path, 'w')
+#     f = open(filename, 'w')
 #   except IOError, e:
 #     print e
 
 #   descriptor = '{:>12}'*2 + '{:>12.7f}' + '\n'
-#   x = np.arange(0, userInput.dimensionX+1, userInput.outspaceX, dtype=np.int)
+#   x = np.arange(0, dimensionX+1, spaceX, dtype=np.int)
 #   for i in range(0, len(plotData)):
 #     y = np.empty(len(plotData[i]), dtype = np.int)
-#     y.fill(i*userInput.outspaceY)
+#     y.fill(i*spaceY)
 #     values = plotData[i]
 #     for c0, c1, c2 in zip(x, y, values):
 #       f.write(descriptor.format(c0, c1, c2))
 #   f.close()
 # # end of saveDat
 
-def saveDat(filename, dimensionX, spaceX, spaceY, plotData):
-  """print the response data in a separate file"""
-  try:
-    f = open(filename, 'w')
-  except IOError, e:
-    print e
-
-  descriptor = '{:>12}'*2 + '{:>12.7f}' + '\n'
-  x = np.arange(0, dimensionX+1, spaceX, dtype=np.int)
-  for i in range(0, len(plotData)):
-    y = np.empty(len(plotData[i]), dtype = np.int)
-    y.fill(i*spaceY)
-    values = plotData[i]
-    for c0, c1, c2 in zip(x, y, values):
-      f.write(descriptor.format(c0, c1, c2))
-  f.close()
-# end of saveDat
-
-
-if __name__ == "__main__":
-	if len(sys.argv) > 1:
-		argument = tuple(sys.argv[1:])
-		userInput = ResponseInput(*argument)
-	else:
-		userInput = ResponseInput()
+def response_spectra_map(userInput):
 	compoDic = {'x':0, 'y':1, 'z':2}
 	typeDic = {'a':2, 'v':1, 'd':0}
 	fp = userInput.fp
@@ -113,15 +91,24 @@ if __name__ == "__main__":
 
 			# calculate response and put into the matrix
 			response[j][i] = max_osc_response(acc, deltaT, 0.05, period, 0, 0)[typeDic[responseType]]
-			# print max_osc_response(acc, deltaT, 0.05, period, 0, 0)[typeDic[responseType]]
-			# response[j][i] = acc[480]
 
 		show_progress(i, numGridX)
 
 	sys.stdout.write('\n')
 	if userInput.printDat:
 		saveDat(userInput.out_path, dimensionX, outSpaceX, outSpaceY, response)
-	plot(response, colorMap)
+	# plot(response, colorMap)
+	plot(response, userInput)
+# end of response_spectra_map
 
-	# TODO: apply bar limits and coloarmap in plotting
+
+
+if __name__ == "__main__":
+	if len(sys.argv) > 1:
+		argument = tuple(sys.argv[1:])
+		userInput = ResponseInput(*argument)
+	else:
+		userInput = ResponseInput()
+	response_spectra_map(userInput)
+
 
