@@ -647,6 +647,83 @@ class ResponseInput(Input):
 	# end of get_out_space
 # end of ResponseInput class
 
+class ResponseInput2(ResponseInput):
+	"""subclass of ResponseInput; used in response_spectra_map2 program"""
+	def __init__(self, *args):
+		if len(args) == 0:
+			filename = super(ResponseInput2, self).get_fp()
+			super(ResponseInput2, self).get_deltaT()
+			super(ResponseInput2, self).get_sim_time()
+			super(ResponseInput2, self).get_int('dimensionX')
+			super(ResponseInput2, self).get_int('dimensionY')
+			# super(ResponseInput2, self).check_size(filename)
+			super(ResponseInput2, self).get_int('spaceX')
+			super(ResponseInput2, self).get_int('spaceY')
+			super(ResponseInput2, self).get_component()
+			super(ResponseInput2, self).get_plotType()
+			super(ResponseInput2, self).get_period()
+			self.get_size()
+			super(ResponseInput2, self).get_bar()
+			if self.barChoice:
+				super(ResponseInput2, self).get_min_max()
+			super(ResponseInput2, self).get_colors()
+			super(ResponseInput2, self).get_printDat()
+			if self.printDat:
+				self.out_path = get_out()
+
+		else:
+			args = list(args)
+			try:
+				filename = super(ResponseInput2, self).set_fp(args[0])
+				super(ResponseInput2, self).set_deltaT(args[1])
+				super(ResponseInput2, self).set_sim_time(args[2])
+				super(ResponseInput2, self).set_int_fields('dimensionX', args[3])
+				super(ResponseInput2, self).set_int_fields('dimensionY', args[4])
+				# super(ResponseInput2, self).check_size(filename)
+				super(ResponseInput2, self).set_int_fields('spaceX', args[5])
+				super(ResponseInput2, self).set_int_fields('spaceY', args[6])
+				super(ResponseInput2, self).set_component(args[7])
+				super(ResponseInput2, self).set_plotType(args[8])
+				super(ResponseInput2, self).set_period(args[9])
+				self.set_size(args[10])
+				super(ResponseInput2, self).set_bar(args[11])
+				if self.barChoice:
+					super(ResponseInput2, self).set_min_max(args[12:14])
+					del args[12:14]
+				super(ResponseInput2, self).set_colors(args[12])
+				super(ResponseInput2, self).set_printDat(args[13])
+				if self.printDat:
+					self.out_path = set_out(args[14])
+			except IndexError:
+				print "[ERROR]: invalid number of parameters."
+				sys.exit()
+	# end of __init__
+
+	def set_size(self, size):
+		try:
+			size = int(size)
+		except ValueError:
+			print "[ERROR]: enter integer number of points to load."
+			return False
+
+		if 0 < size <= (self.dimensionX/self.spaceX+1):
+			self.size = size
+			return True
+		else:
+			print "[ERROR]: size has to be no greater than number of points in X axis."
+			return False
+	# end of set_size
+
+	def get_size(self):
+		size = 0
+		while not size:
+			size = raw_input("== Enter number of points to load at once: ")
+			size = self.set_size(size)
+	# end of get_size
+# end of ResponseInput2 class
+
+
+
 def set_out(out_path):
 	if '/' in out_path:
 		tmp = out_path.split('/')
@@ -674,9 +751,9 @@ def get_out():
 if __name__ == "__main__":
 	if len(sys.argv) > 1:
 		argument = tuple(sys.argv[1:])
-		i = ResponseInput(*argument)
+		i = ResponseInput2(*argument)
 	else:
-		i = ResponseInput()
+		i = ResponseInput2()
 
 	# print i.__dict__
 	# d = DatInput()

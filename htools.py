@@ -110,4 +110,11 @@ def show_progress(i, num):
   sys.stdout.flush()
 # end of show_progress
 
+def dis_to_acc(dis, deltaT):
+  vel = derivative(dis, deltaT)
+  acc = derivative(vel, deltaT)
+  return acc
+# end of dis_to_acc
+
+
 

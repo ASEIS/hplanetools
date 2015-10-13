@@ -13,7 +13,7 @@ from htools import *
 from userInput import *
 np.seterr(divide='ignore', invalid='ignore')
 
-def loadFile(fp, alongStrike, downDip, num_layers, x_coor, y_coor):
+def loadFile(fp, alongStrike, downDip, num_layers, x_coor, y_coor, size):
 	"""load the displacement data at given grid point"""
 	dis = np.array([], float)
 	base = alongStrike*downDip*3*num_layers # number of data in past layers
@@ -21,36 +21,49 @@ def loadFile(fp, alongStrike, downDip, num_layers, x_coor, y_coor):
 	offset = index*8 # offset measured in byte
 
 	try:
-		dis = np.memmap(fp, np.float64, 'r', offset, (3)) # load three numbers for three orientations
+		dis = np.memmap(fp, np.float64, 'r', offset, (3*size)) # load three numbers for three orientations
 		return dis
 	except ValueError:
 		print "[ERROR]: unable to load file."
 		sys.exit()
 # end of loadFile
 
-def dis_to_acc(dis, deltaT):
-	vel = derivative(dis, deltaT)
-	acc = derivative(vel, deltaT)
-	return acc
-# end of dis_to_acc
+# def saveDat(userInput, plotData):
+#   """print the response data in a separate file"""
+#   try:
+#     f = open(userInput.out_path, 'w')
+#   except IOError, e:
+#     print e
 
-def saveDat(userInput, plotData):
-	"""print the response data in a separate file"""
-	try:
-		f = open(userInput.out_path, 'w')
-	except IOError, e:
-		print e
+#   descriptor = '{:>12}'*2 + '{:>12.7f}' + '\n'
+#   x = np.arange(0, userInput.dimensionX+1, userInput.outspaceX, dtype=np.int)
+#   for i in range(0, len(plotData)):
+#     y = np.empty(len(plotData[i]), dtype = np.int)
+#     y.fill(i*userInput.outspaceY)
+#     values = plotData[i]
+#     for c0, c1, c2 in zip(x, y, values):
+#       f.write(descriptor.format(c0, c1, c2))
+#   f.close()
+# # end of saveDat
 
-	descriptor = '{:>12}'*2 + '{:>12.7f}' + '\n'
-	x = np.arange(0, userInput.dimensionX+1, userInput.outspaceX, dtype=np.int)
-	for i in range(0, len(plotData)):
-		y = np.empty(len(plotData[i]), dtype = np.int)
-		y.fill(i*userInput.outspaceY)
-		values = plotData[i]
-		for c0, c1, c2 in zip(x, y, values):
-			f.write(descriptor.format(c0, c1, c2))
-	f.close()
+def saveDat(filename, dimensionX, spaceX, spaceY, plotData):
+  """print the response data in a separate file"""
+  try:
+    f = open(filename, 'w')
+  except IOError, e:
+    print e
+
+  descriptor = '{:>12}'*2 + '{:>12.7f}' + '\n'
+  x = np.arange(0, dimensionX+1, spaceX, dtype=np.int)
+  for i in range(0, len(plotData)):
+    y = np.empty(len(plotData[i]), dtype = np.int)
+    y.fill(i*spaceY)
+    values = plotData[i]
+    for c0, c1, c2 in zip(x, y, values):
+      f.write(descriptor.format(c0, c1, c2))
+  f.close()
 # end of saveDat
+
 
 if __name__ == "__main__":
 	if len(sys.argv) > 1:
@@ -94,7 +107,7 @@ if __name__ == "__main__":
 				x_coor = i * (outSpaceX/spaceX)
 				y_coor = j * (outSpaceY/spaceY)
 
-				data = loadFile(fp, alongStrike, downDip, k, y_coor, x_coor)
+				data = loadFile(fp, alongStrike, downDip, k, y_coor, x_coor, 1)
 				dis = np.append(dis, data[compoDic[component]])
 			acc = dis_to_acc(dis, deltaT)
 
@@ -107,7 +120,8 @@ if __name__ == "__main__":
 
 	sys.stdout.write('\n')
 	if userInput.printDat:
-		saveDat(userInput, response)
+		saveDat(userInput.out_path, dimensionX, outSpaceX, outSpaceY, response)
 	plot(response, colorMap)
 
+	# TODO: apply bar limits and coloarmap in plotting
 

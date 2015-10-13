@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.mlab as ml
 from userInput import *
 from planeData import *
+from htools import *
 
 def components(magSelect, dataX, dataY, dataZ):
 	"""decide components to use for displacement plotting"""

@@ -10,93 +10,105 @@ import sys
 sys.path.insert(0, '/Users/kelicheng/seismtools') # insert the path to seismtools to import stools program.
 from stools import *
 from htools import *
+from userInput import *
+from response_spectra_map import *
 np.seterr(divide='ignore', invalid='ignore')
 
-def loadFile(filename, numGridX, numGridY, num_layers, x_coor, y_coor, block_size):
-	"""load the displacement data at given grid point"""
-	dis = np.array([], float)
-	base = numGridX*numGridY*3*num_layers # number of data in past layers
-	# index = base + (numGridY*x_coor+y_coor)*3 # number of data in past layers + postion in current layer
-	# index = base + (136*x_coor+y_coor)*3
-	index = base + (136*y_coor+x_coor)*3
-	# index = base + (181*x_coor+y_coor)*3
-	# index = base + (181*y_coor+x_coor)*3
+# def loadFile(fp, numGridX, numGridY, num_layers, x_coor, y_coor, size):
+# 	"""load the displacement data at given grid point"""
+# 	fp = userInput.fp
+# 	numGridX = userInput.numGridX
+# 	numGridY = userInput.numGridY
+# 	try:
+# 		size = userInput.size
+# 	except AttributeError:
+# 		size = 1
+# 	dis = np.array([], float)
+# 	base = numGridX*numGridY*3*num_layers # number of data in past layers
+# 	index = base + (numGridX*x_coor+y_coor)*3 # number of data in past layers + postion in current layer
+# 	offset = index*8 # offset measured in byte
 
-	offset = index*8 # offset measured in byte
+# 	try:
+# 		dis = np.memmap(fp, np.float64, 'r', offset, (3*size)) # load three numbers for three orientations
+# 		return dis
+# 	except ValueError:
+# 		print "[ERROR]: unable to load file."
+# 		sys.exit()
+# # end of loadFile
 
-	try:
-		dis = np.memmap(filename, np.float64, 'r', offset, (3*block_size)) # load three numbers for three orientations
-		return dis
-	except ValueError:
-		# return np.zeros((3*block_size))
-		# pass
-		print x_coor, y_coor, num_layers
-		print "[ERROR]: unable to load file."
-		sys.exit()
-# end of loadFile
+# def saveDat(dimensionX, spaceX, spaceY, plotData):
+#   """print the response data in a separate file"""
+#   try:
+#     f = open(userInput.out_path, 'w')
+#   except IOError, e:
+#     print e
 
-def dis_to_acc(dis, deltaT):
-	vel = derivative(dis, deltaT)
-	acc = derivative(vel, deltaT)
-	return acc
-# end of dis_to_acc
+#   descriptor = '{:>12}'*2 + '{:>12.7f}' + '\n'
+#   x = np.arange(0, dimensionX+1, spaceX, dtype=np.int)
+#   for i in range(0, len(plotData)):
+#     y = np.empty(len(plotData[i]), dtype = np.int)
+#     y.fill(i*spaceY)
+#     values = plotData[i]
+#     for c0, c1, c2 in zip(x, y, values):
+#       f.write(descriptor.format(c0, c1, c2))
+#   f.close()
+# # end of saveDat
 
 
 if __name__ == "__main__":
+	if len(sys.argv) > 1:
+		argument = tuple(sys.argv[1:])
+		userInput = ResponseInput2(*argument)
+	else:
+		userInput = ResponseInput2()
+
 	compoDic = {'x':0, 'y':1, 'z':2}
 	typeDic = {'a':2, 'v':'1', 'd':0}
-	filename = 'planedisplacements2.0'
-	dimensionX = 180000
-	dimensionY = 135000
-	spaceX = 1000
-	spaceY = 1000
-	block_size = 136
+	fp = userInput.fp
+	dimensionX = userInput.dimensionX
+	dimensionY = userInput.dimensionY
+	spaceX = userInput.spaceX
+	spaceY = userInput.spaceY
+	block_size = userInput.size
 
-	simulationTime = 50
-	deltaT = 0.1
-	period = 20
-	component = 'x'
-	responseType = 'a'
-	colorMap = 'hot'
+	simulationTime = userInput.simulationTime
+	deltaT = userInput.deltaT
+	period = userInput.period
+	component = userInput.component
+	responseType = userInput.plotType
+	colorMap = userInput.colorMap
 
 
 	numLayer = int(simulationTime/deltaT)
 	numGridX = dimensionX/spaceX+1
 	numGridY = dimensionY/spaceY+1
-	# numGridX = int(dimensionX/outSpaceX)
-	# numGridY = int(dimensionY/outSpaceY)
-
 
 	response = np.empty((numGridY, numGridX))
 	dis = np.empty((numLayer, block_size))
 	# iterate through each grid points
-	for i in range(0, numGridX):
+	for i in range(0, numGridY):
 		j = 0
-		while j < numGridY:
-			x_coor = i
-			y_coor = j
+		while j < numGridX:
+			if j + block_size > numGridX:
+				tmp_size = numGridX-j
+			else:
+				tmp_size = block_size
 
+			# load the data at each time stamp
 			for k in range(0, numLayer):
-				# data = loadFile(filename, 136, 181, k, x_coor, y_coor, block_size)
-				data = loadFile(filename, 136, 181, k, y_coor, x_coor, block_size)
+				data = loadFile(fp, numGridY, numGridX, k, i, j, tmp_size)
+				dis[k] = data[compoDic[component]::3]
 
-				dis[k] = data[::3]
-
-
-			for k in range(0, block_size):
-				response[j+k][i] = dis[:,k][490]
-				# acc = dis_to_acc(dis[:,k], deltaT)
-				# response[j+k][i] = max_osc_response(acc, deltaT, 0.05, period, 0, 0)[typeDic[responseType]]
-				# response[j+block_size-k-1][numGridX-i-1] = max_osc_response(acc, deltaT, 0.05, period, 0, 0)[typeDic[responseType]]
-				# try:
-				# 	response[j+block_size-k][i] = max_osc_response(acc, deltaT, 0.05, period, 0, 0)[typeDic[responseType]]
-				# except IndexError:
-				# 	pass
+			# for each signal, generate acceleration signal and calculate response
+			for k in range(0, tmp_size):
+				acc = dis_to_acc(dis[:,k], deltaT)
+				response[i][j+k] = max_osc_response(acc, deltaT, 0.05, period, 0, 0)[typeDic[responseType]]
 			j+=block_size
-		show_progress(i, numGridX)
+		show_progress(i, numGridY)
 	sys.stdout.write('\n')
+	if userInput.printDat:
+		saveDat(userInput.out_path, dimensionX, spaceX, spaceY, response)
 	plot(response, colorMap)
-
 
 
 
