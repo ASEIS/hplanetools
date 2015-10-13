@@ -124,7 +124,7 @@ def saveDat(userInput, plotData, index):
 		for c0, c1, c2 in zip(x, y, values):
 			f.write(descriptor.format(c0, c1, c2))
 	f.close()
-# end of printDat
+# end of saveDat
 
 def notSaveDat(userInput, plotData, index):
 	pass

@@ -108,6 +108,6 @@ def show_progress(i, num):
   spaces = ' '*(20-len(hashes))
   sys.stdout.write("\rProgress: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
   sys.stdout.flush()
-
+# end of show_progress
 
 

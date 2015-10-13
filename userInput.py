@@ -463,7 +463,8 @@ class ExtractInput(Input):
 			super(ExtractInput, self).get_int('stepDownDip')
 			self.get_coor('x')
 			self.get_coor('y')
-			self.get_out()
+			# self.get_out()
+			self.out_path = get_out()
 		else:
 			args = list(args)
 			try:
@@ -477,7 +478,8 @@ class ExtractInput(Input):
 				super(ExtractInput, self).set_int_fields('stepDownDip', args[6])
 				self.set_coor('x', args[7])
 				self.set_coor('y', args[8])
-				self.set_out(args[9])
+				# self.set_out(args[9])
+				self.out_path = set_out(args[9])
 			except IndexError:
 				print "[ERROR]: invalid parameters."
 				sys.exit()
@@ -499,37 +501,182 @@ class ExtractInput(Input):
 			coordinate = self.set_coor(flag, coordinate)
 	# end of get_coor
 
-	def set_out(self, out_path):
-		if '/' in out_path:
-			tmp = out_path.split('/')
-			out_dir = '/'.join(tmp[:-1])
-			if os.path.exists(out_dir):
-				self.out_path = out_path
-				return True
-			else:
-				print "[ERROR]: invalid path; directory does not exist."
-				return False
+	# def set_out(self, out_path):
+	# 	if '/' in out_path:
+	# 		tmp = out_path.split('/')
+	# 		out_dir = '/'.join(tmp[:-1])
+	# 		if os.path.exists(out_dir):
+	# 			self.out_path = out_path
+	# 			return True
+	# 		else:
+	# 			print "[ERROR]: invalid path; directory does not exist."
+	# 			return False
+	# 	else:
+	# 		current = os.getcwd()
+	# 		self.out_path = current + '/' + out_path
+	# 		return True
+
+	# def get_out(self):
+	# 	out_path = ''
+	# 	while not out_path:
+	# 		out_path = raw_input("== Enter the complete path to output file: ")
+	# 		output = self.set_out(out_path)
+	# # end of get_out
+# end of ExtractInput class
+
+class ResponseInput(Input):
+	"""subclass of Input; used in response_spectra_map program"""
+	def __init__(self, *args):
+		if len(args) == 0:
+			filename = super(ResponseInput, self).get_fp()
+			super(ResponseInput, self).get_deltaT()
+			super(ResponseInput, self).get_sim_time()
+			super(ResponseInput, self).get_int('dimensionX')
+			super(ResponseInput, self).get_int('dimensionY')
+			# super(ResponseInput, self).check_size(filename)
+			super(ResponseInput, self).get_int('spaceX')
+			super(ResponseInput, self).get_int('spaceY')
+			self.get_component()
+			super(ResponseInput, self).get_plotType()
+			self.get_period()
+			self.get_out_space('X')
+			self.get_out_space('Y')
+			super(ResponseInput, self).get_bar()
+			if self.barChoice:
+				super(ResponseInput, self).get_min_max()
+			super(ResponseInput, self).get_colors()
+			super(ResponseInput, self).get_printDat()
+			if self.printDat:
+				self.out_path = get_out()
+
 		else:
-			current = os.getcwd()
-			self.out_path = current + '/' + out_path
+			args = list(args)
+			try:
+				filename = super(ResponseInput, self).set_fp(args[0])
+				super(ResponseInput, self).set_deltaT(args[1])
+				super(ResponseInput, self).set_sim_time(args[2])
+				super(ResponseInput, self).set_int_fields('dimensionX', args[3])
+				super(ResponseInput, self).set_int_fields('dimensionY', args[4])
+				# super(ResponseInput, self).check_size(filename)
+				super(ResponseInput, self).set_int_fields('spaceX', args[5])
+				super(ResponseInput, self).set_int_fields('spaceY', args[6])
+				self.set_component(args[7])
+				super(ResponseInput, self).set_plotType(args[8])
+				self.set_period(args[9])
+				self.set_out_space(args[10], 'X')
+				self.set_out_space(args[11], 'Y')
+				super(ResponseInput, self).set_bar(args[12])
+				if self.barChoice:
+					super(ResponseInput, self).set_min_max(args[13:15])
+					del args[13:15]
+				super(ResponseInput, self).set_colors(args[13])
+				super(ResponseInput, self).set_printDat(args[14])
+				if self.printDat:
+					self.out_path = set_out(args[15])
+			except IndexError:
+				print "[ERROR]: invalid number of parameters."
+				sys.exit()
+	# end of __init__
+
+	def set_component(self, component):
+		c = ['x', 'y', 'z']
+		try:
+			component = component.lower()[0]
+		except (AttributeError, IndexError) as e:
+			print "[Error]: invalid component selection."
+			return False
+
+		if component in c:
+			self.component = component
 			return True
+		else:
+			print "[Error]: invalid component selection."
+			return False
+	# end of set_component
 
-	def get_out(self):
-		out_path = ''
-		while not out_path:
-			out_path = raw_input("== Enter the complete path to output file: ")
-			output = self.set_out(out_path)
-	# end of get_out
+	def get_component(self):
+		component = ''
+		while not component:
+			component = raw_input("== Enter the component choice [x/y/z]: ")
+			component = self.set_component(component)
+	# end of get_component
 
+	def set_period(self, period):
+		try:
+			self.period = float(period)
+			return True
+		except ValueError:
+			print "[ERROR]: invalid value of period."
+			return False
+	# end of set_period
+
+	def get_period(self):
+		period = 0.0
+		while not period:
+			period = self.set_period(raw_input("== Enter the value of period: "))
+	# end of get_period
+
+	def set_out_space(self, space, axis):
+		varName = "outspace" + axis
+		try:
+			space = int(space)
+		except ValueError:
+			print "[ERROR]: enter integer value for output space. "
+
+		if axis == 'x':
+			sapceChoice = self.spaceX
+			dimenChoice = self.dimensionX
+		else:
+			sapceChoice = self.spaceY
+			dimenChoice = self.dimensionY
+
+		# check output space choice with original space and dimension length
+		if space%sapceChoice == 0 and dimenChoice%space == 0:
+			self.__dict__[varName] = space
+			return True
+		else:
+			print "[ERROR]: output space has to be multiple of original space and be divisible by dimension length."
+			return False
+	# end of set_out_space
+
+	def get_out_space(self, axis):
+		space = 0
+		while not space:
+			space =  raw_input("== Enter the value of output space in " + axis + " axis: ")
+			space = self.set_out_space(space, axis)
+	# end of get_out_space
+# end of ResponseInput class
+
+def set_out(out_path):
+	if '/' in out_path:
+		tmp = out_path.split('/')
+		out_dir = '/'.join(tmp[:-1])
+		if os.path.exists(out_dir):
+			return out_path
+		else:
+			print "[ERROR]: invalid path; directory does not exist."
+			return False
+	else:
+		current = os.getcwd()
+		return current + '/' + out_path
+# end of set_out
+
+def get_out():
+	out_path = ''
+	while not out_path:
+		out_path = raw_input("== Enter the complete path to output file: ")
+		out_path = set_out(out_path)
+	return out_path
+# end of get_out
 
 
 
 if __name__ == "__main__":
 	if len(sys.argv) > 1:
 		argument = tuple(sys.argv[1:])
-		i = ExtractInput(*argument)
+		i = ResponseInput(*argument)
 	else:
-		i = ExtractInput()
+		i = ResponseInput()
 
 	# print i.__dict__
 	# d = DatInput()
