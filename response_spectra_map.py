@@ -8,45 +8,13 @@
 import numpy as np
 import sys
 sys.path.insert(0, '/Users/kelicheng/seismtools') # insert the path to seismtools to import stools program.
-from stools import *
+from stools import max_osc_response
 # from htools import *
-from htools import plot, saveDat, dis_to_acc, show_progress
+from htools import plot, saveDat, dis_to_acc, show_progress, loadFile
 # from userInput import *
 from userInput import ResponseInput
 np.seterr(divide='ignore', invalid='ignore')
 
-def loadFile(fp, alongStrike, downDip, num_layers, x_coor, y_coor, size):
-	"""load the displacement data at given grid point"""
-	dis = np.array([], float)
-	base = alongStrike*downDip*3*num_layers # number of data in past layers
-	index = base + (downDip*x_coor+y_coor)*3 # number of data in past layers + postion in current layer
-	offset = index*8 # offset measured in byte
-
-	try:
-		dis = np.memmap(fp, np.float64, 'r', offset, (3*size)) # load three numbers for three orientations
-		return dis
-	except ValueError:
-		print "[ERROR]: unable to load file."
-		sys.exit()
-# end of loadFile
-
-# def saveDat(filename, dimensionX, spaceX, spaceY, plotData):
-#   """print the response data in a separate file"""
-#   try:
-#     f = open(filename, 'w')
-#   except IOError, e:
-#     print e
-
-#   descriptor = '{:>12}'*2 + '{:>12.7f}' + '\n'
-#   x = np.arange(0, dimensionX+1, spaceX, dtype=np.int)
-#   for i in range(0, len(plotData)):
-#     y = np.empty(len(plotData[i]), dtype = np.int)
-#     y.fill(i*spaceY)
-#     values = plotData[i]
-#     for c0, c1, c2 in zip(x, y, values):
-#       f.write(descriptor.format(c0, c1, c2))
-#   f.close()
-# # end of saveDat
 
 def response_spectra_map(userInput):
 	compoDic = {'x':0, 'y':1, 'z':2}

@@ -722,6 +722,73 @@ class ResponseInput2(ResponseInput):
 	# end of get_size
 # end of ResponseInput2 class
 
+class FourierInput(ResponseInput2):
+	"""subclass of ResponseInput2; used in fourier_spectra_map program"""
+	def __init__(self, *args):
+		if len(args) == 0:
+			filename = super(FourierInput, self).get_fp()
+			super(FourierInput, self).get_deltaT()
+			super(FourierInput, self).get_sim_time()
+			super(FourierInput, self).get_int('dimensionX')
+			super(FourierInput, self).get_int('dimensionY')
+			# super(FourierInput, self).check_size(filename)
+			super(FourierInput, self).get_int('spaceX')
+			super(FourierInput, self).get_int('spaceY')
+			super(FourierInput, self).get_component()
+			super(FourierInput, self).get_plotType()
+			self.get_freq()
+			super(FourierInput, self).get_size()
+			super(FourierInput, self).get_bar()
+			if self.barChoice:
+				super(FourierInput, self).get_min_max()
+			super(FourierInput, self).get_colors()
+			super(FourierInput, self).get_printDat()
+			if self.printDat:
+				self.out_path = get_out()
+
+		else:
+			args = list(args)
+			try:
+				filename = super(FourierInput, self).set_fp(args[0])
+				super(FourierInput, self).set_deltaT(args[1])
+				super(FourierInput, self).set_sim_time(args[2])
+				super(FourierInput, self).set_int_fields('dimensionX', args[3])
+				super(FourierInput, self).set_int_fields('dimensionY', args[4])
+				# super(FourierInput, self).check_size(filename)
+				super(FourierInput, self).set_int_fields('spaceX', args[5])
+				super(FourierInput, self).set_int_fields('spaceY', args[6])
+				super(FourierInput, self).set_component(args[7])
+				super(FourierInput, self).set_plotType(args[8])
+				self.set_freq(args[9])
+				super(FourierInput, self).set_size(args[10])
+				super(FourierInput, self).set_bar(args[11])
+				if self.barChoice:
+					super(FourierInput, self).set_min_max(args[12:14])
+					del args[12:14]
+				super(FourierInput, self).set_colors(args[12])
+				super(FourierInput, self).set_printDat(args[13])
+				if self.printDat:
+					self.out_path = set_out(args[14])
+			except IndexError:
+				print "[ERROR]: invalid number of parameters."
+				sys.exit()
+	# end of __init__
+	def set_freq(self, frequence):
+		try:
+			self.frequence = float(frequence)
+			return True
+		except ValueError:
+			print "[ERROR]: invalid value of frequence."
+			return False
+	# end of set_freq
+
+	def get_freq(self):
+		frequence = 0.0
+		while not frequence:
+			frequence = self.set_freq(raw_input("== Enter the value of frequence: "))
+	# end of get_freq
+# end of FourierInput
+
 
 
 def set_out(out_path):

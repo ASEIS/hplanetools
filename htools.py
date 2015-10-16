@@ -156,4 +156,19 @@ def plot(data, userInput):
   plt.show()
 # end of plot
 
+def loadFile(fp, alongStrike, downDip, num_layers, x_coor, y_coor, size):
+  """load the displacement data at given grid point"""
+  dis = np.array([], float)
+  base = alongStrike*downDip*3*num_layers # number of data in past layers
+  index = base + (downDip*x_coor+y_coor)*3 # number of data in past layers + postion in current layer
+  offset = index*8 # offset measured in byte
+
+  try:
+    dis = np.memmap(fp, np.float64, 'r', offset, (3*size)) # load three numbers for three orientations
+    return dis
+  except ValueError:
+    print "[ERROR]: unable to load file."
+    sys.exit()
+# end of loadFile
+
 

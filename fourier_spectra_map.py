@@ -1,25 +1,33 @@
 # /*
 #  ============================================================================
 # Loads the plane displacement data to produce acceleration signals at each grid
-# point, then generates a response spectra map of signals.
-# Version: Oct 05, 2015.
+# point, then generates a fourier spectra map of signals.
+# Version: Oct 16, 2015.
 #  ============================================================================
 #  */
 import numpy as np
 import sys
 sys.path.insert(0, '/Users/kelicheng/seismtools') # insert the path to seismtools to import stools program.
-from stools import max_osc_response
-# from htools import *
-from htools import plot, saveDat, dis_to_acc, show_progress, loadFile
-from userInput import ResponseInput2
-# from userInput import *
-# from response_spectra_map import *
-# from response_spectra_map import loadFile
+from stools import smooth
+from htools import plot, saveDat, derivative, dis_to_acc, show_progress, loadFile
+from userInput import FourierInput
 np.seterr(divide='ignore', invalid='ignore')
+def not_process(data, deltaT):
+	return data
 
-def response_spectra_map2(userInput):
+def FAS(data, dt, points, freq, s_factor):
+  afs = abs(np.fft.fft(data, points))*dt
+  afs = smooth(afs, s_factor)
+  deltaf = (1/dt)/points
+  index = int(freq/deltaf)
+  return afs[index]
+# end of FAS
+
+
+
+def fourier_spectra_map(userInput):
 	compoDic = {'x':0, 'y':1, 'z':2}
-	typeDic = {'a':2, 'v':'1', 'd':0}
+	typeDic = {'a':dis_to_acc, 'v':derivative, 'd':not_process}
 	fp = userInput.fp
 	dimensionX = userInput.dimensionX
 	dimensionY = userInput.dimensionY
@@ -29,18 +37,19 @@ def response_spectra_map2(userInput):
 
 	simulationTime = userInput.simulationTime
 	deltaT = userInput.deltaT
-	period = userInput.period
+	frequence = userInput.frequence
 	component = userInput.component
-	responseType = userInput.plotType
+	dataType = userInput.plotType
 	colorMap = userInput.colorMap
 
 
-	numLayer = int(simulationTime/deltaT)
+	points = int(simulationTime/deltaT)
 	numGridX = dimensionX/spaceX+1
 	numGridY = dimensionY/spaceY+1
 
-	response = np.empty((numGridY, numGridX))
-	dis = np.empty((numLayer, block_size))
+
+	fourier = np.empty((numGridY, numGridX))
+	dis = np.empty((points, block_size))
 	# iterate through each grid points
 	for i in range(0, numGridY):
 		j = 0
@@ -51,21 +60,22 @@ def response_spectra_map2(userInput):
 				tmp_size = block_size
 
 			# load the data at each time stamp
-			for k in range(0, numLayer):
+			for k in range(0, points):
 				data = loadFile(fp, numGridY, numGridX, k, i, j, tmp_size)
 				dis[k] = data[compoDic[component]::3]
 
 			# for each signal, generate acceleration signal and calculate response
 			for k in range(0, tmp_size):
-				acc = dis_to_acc(dis[:,k], deltaT)
-				response[i][j+k] = max_osc_response(acc, deltaT, 0.05, period, 0, 0)[typeDic[responseType]]
+				data = typeDic[dataType](dis[:,k], deltaT) # convert dis data to specified data type
+				fourier[i][j+k] = FAS(data, deltaT, points, frequence, 3)
+
 			j+=block_size
 		show_progress(i, numGridY)
 	sys.stdout.write('\n')
 	if userInput.printDat:
-		saveDat(userInput.out_path, dimensionX, spaceX, spaceY, response)
+		saveDat(userInput.out_path, dimensionX, spaceX, spaceY, fourier)
 	# plot(response, colorMap)
-	plot(response, userInput)
+	plot(fourier, userInput)
 # end of response_spectra_map2
 
 
@@ -73,11 +83,11 @@ def response_spectra_map2(userInput):
 if __name__ == "__main__":
 	if len(sys.argv) > 1:
 		argument = tuple(sys.argv[1:])
-		userInput = ResponseInput2(*argument)
+		userInput = FourierInput(*argument)
 	else:
-		userInput = ResponseInput2()
+		userInput = FourierInput()
 
-	response_spectra_map2(userInput)
+	fourier_spectra_map(userInput)
 
 
 
