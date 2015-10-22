@@ -10,8 +10,9 @@ def gmtColormap(fileName):
       try:
           f = open(fileName)
       except:
-          print "file ",filePath, "not found"
-          return None
+        print "[ERROR]: cpt file not found."
+        sys.exit()
+
 
       lines = f.readlines()
       f.close()

@@ -9,12 +9,8 @@ import numpy as np
 import sys
 sys.path.insert(0, '/Users/kelicheng/seismtools') # insert the path to seismtools to import stools program.
 from stools import max_osc_response
-# from htools import *
 from htools import plot, saveDat, dis_to_acc, show_progress, loadFile
 from userInput import ResponseInput2
-# from userInput import *
-# from response_spectra_map import *
-# from response_spectra_map import loadFile
 np.seterr(divide='ignore', invalid='ignore')
 
 def response_spectra_map2(userInput):

@@ -8,7 +8,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.mlab as ml
-from userInput import *
+from userInput import Input
 from planeData import *
 from htools import show_progress
 
@@ -234,11 +234,6 @@ def userSnapshot(userInput):
 			process_dict['save'](userInput, peak, index)
 
 		# showing progress on terminal
-		# percent = float(i)/runtime
-		# hashes = '#'*int(round(percent*20))
-		# spaces = ' '*(20-len(hashes))
-		# sys.stdout.write("\rProgress: [{0}] {1}%".format(hashes+spaces, int(round(percent*100))))
-		# sys.stdout.flush()
 		show_progress(i, runtime)
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # ==========================================
-# The program contians the classes that may be used by other program.
+# The program contians the userInput classes that may be used by other program.
 # ==========================================
 import os
 import sys
@@ -13,9 +13,7 @@ class Input(object):
 		self.deltaT = 0.0
 		self.simulationTime, self.alongStrike, self.downDip, self.stepAlongStrike, self.stepDownDip = 0.0, 0, 0, 0, 0
 		self.magSelect, self.magnitude = [], False
-		# self.scale = ""
 		self.cumulative = True
-		# self.snapshots, self.numSnapshots = "m", 5
 		self.snapshots, self.numSnapshots = 's', 0
 		self.barChoice, self.barMin, self.barMax = False, 0.0, 0.0
 		self.colorMap = 'hot'
@@ -33,7 +31,8 @@ class Input(object):
 			self.get_sim_time()
 			self.get_int('alongStrike')
 			self.get_int('downDip')
-			self.check_size(filename)
+			# self.check_size(filename)
+			check_size(self, filename, self.alongStrike, self.downDip)
 
 			self.get_int('stepAlongStrike')
 			self.get_int('stepDownDip')
@@ -41,7 +40,6 @@ class Input(object):
 			if len(self.magSelect) == 1:
 				self.get_magnitude()
 
-			# self.get_scale()
 			self.get_cum()
 			self.get_snap()
 			if self.snapshots == 'm':
@@ -62,7 +60,8 @@ class Input(object):
 				self.set_sim_time(args[3])
 				self.set_int_fields('alongStrike', args[4])
 				self.set_int_fields('downDip', args[5])
-				self.check_size(filename)
+				# self.check_size(filename)
+				check_size(self, filename, self.alongStrike, self.downDip)
 				self.set_int_fields('stepAlongStrike', args[6])
 				self.set_int_fields('stepDownDip', args[7])
 				self.set_mag(args[8])
@@ -393,17 +392,6 @@ class Input(object):
 			print "[ERROR]: missing choice for " + varName + "."
 			return False
 	# end of check_bool
-
-	def check_size(self, filename):
-		"""compare the size of given file and the estimated size"""
-		stat = os.stat(filename)
-		act_size = stat.st_size
-		est_size = self.alongStrike*self.downDip*self.simulationTime/self.deltaT*64*3/8
-
-		if act_size != est_size:
-			print "[ERROR]: the size of given file doesn't match given parameters."
-			sys.exit()
-	# end of check_size
 # end of input
 
 
@@ -458,7 +446,8 @@ class ExtractInput(Input):
 			super(ExtractInput, self).get_sim_time()
 			super(ExtractInput, self).get_int('alongStrike')
 			super(ExtractInput, self).get_int('downDip')
-			super(ExtractInput, self).check_size(filename)
+			# super(ExtractInput, self).check_size(filename)
+			check_size(self, filename, self.alongStrike, self.downDip)
 			super(ExtractInput, self).get_int('stepAlongStrike')
 			super(ExtractInput, self).get_int('stepDownDip')
 			self.get_coor('x')
@@ -473,7 +462,8 @@ class ExtractInput(Input):
 				super(ExtractInput, self).set_sim_time(args[2])
 				super(ExtractInput, self).set_int_fields('alongStrike', args[3])
 				super(ExtractInput, self).set_int_fields('downDip', args[4])
-				super(ExtractInput, self).check_size(filename)
+				# super(ExtractInput, self).check_size(filename)
+				check_size(self, filename, self.alongStrike, self.downDip)
 				super(ExtractInput, self).set_int_fields('stepAlongStrike', args[5])
 				super(ExtractInput, self).set_int_fields('stepDownDip', args[6])
 				self.set_coor('x', args[7])
@@ -500,28 +490,6 @@ class ExtractInput(Input):
 			coordinate = raw_input("== Enter the " + flag + " coordinate of station: ")
 			coordinate = self.set_coor(flag, coordinate)
 	# end of get_coor
-
-	# def set_out(self, out_path):
-	# 	if '/' in out_path:
-	# 		tmp = out_path.split('/')
-	# 		out_dir = '/'.join(tmp[:-1])
-	# 		if os.path.exists(out_dir):
-	# 			self.out_path = out_path
-	# 			return True
-	# 		else:
-	# 			print "[ERROR]: invalid path; directory does not exist."
-	# 			return False
-	# 	else:
-	# 		current = os.getcwd()
-	# 		self.out_path = current + '/' + out_path
-	# 		return True
-
-	# def get_out(self):
-	# 	out_path = ''
-	# 	while not out_path:
-	# 		out_path = raw_input("== Enter the complete path to output file: ")
-	# 		output = self.set_out(out_path)
-	# # end of get_out
 # end of ExtractInput class
 
 class ResponseInput(Input):
@@ -533,9 +501,9 @@ class ResponseInput(Input):
 			super(ResponseInput, self).get_sim_time()
 			super(ResponseInput, self).get_int('dimensionX')
 			super(ResponseInput, self).get_int('dimensionY')
-			# super(ResponseInput, self).check_size(filename)
 			super(ResponseInput, self).get_int('spaceX')
 			super(ResponseInput, self).get_int('spaceY')
+			check_size(self, filename, int(self.dimensionY/self.spaceY)+1, int(self.dimensionX/self.spaceX)+1)
 			self.get_component()
 			super(ResponseInput, self).get_plotType()
 			self.get_period()
@@ -560,6 +528,7 @@ class ResponseInput(Input):
 				# super(ResponseInput, self).check_size(filename)
 				super(ResponseInput, self).set_int_fields('spaceX', args[5])
 				super(ResponseInput, self).set_int_fields('spaceY', args[6])
+				check_size(self, filename, int(self.dimensionY/self.spaceY)+1, int(self.dimensionX/self.spaceX)+1)
 				self.set_component(args[7])
 				super(ResponseInput, self).set_plotType(args[8])
 				self.set_period(args[9])
@@ -659,6 +628,7 @@ class ResponseInput2(ResponseInput):
 			# super(ResponseInput2, self).check_size(filename)
 			super(ResponseInput2, self).get_int('spaceX')
 			super(ResponseInput2, self).get_int('spaceY')
+			check_size(self, filename, int(self.dimensionY/self.spaceY)+1, int(self.dimensionX/self.spaceX)+1)
 			super(ResponseInput2, self).get_component()
 			super(ResponseInput2, self).get_plotType()
 			super(ResponseInput2, self).get_period()
@@ -682,6 +652,7 @@ class ResponseInput2(ResponseInput):
 				# super(ResponseInput2, self).check_size(filename)
 				super(ResponseInput2, self).set_int_fields('spaceX', args[5])
 				super(ResponseInput2, self).set_int_fields('spaceY', args[6])
+				check_size(self, filename, int(self.dimensionY/self.spaceY)+1, int(self.dimensionX/self.spaceX)+1)
 				super(ResponseInput2, self).set_component(args[7])
 				super(ResponseInput2, self).set_plotType(args[8])
 				super(ResponseInput2, self).set_period(args[9])
@@ -734,6 +705,7 @@ class FourierInput(ResponseInput2):
 			# super(FourierInput, self).check_size(filename)
 			super(FourierInput, self).get_int('spaceX')
 			super(FourierInput, self).get_int('spaceY')
+			check_size(self, filename, int(self.dimensionY/self.spaceY)+1, int(self.dimensionX/self.spaceX)+1)
 			super(FourierInput, self).get_component()
 			super(FourierInput, self).get_plotType()
 			self.get_freq()
@@ -757,6 +729,7 @@ class FourierInput(ResponseInput2):
 				# super(FourierInput, self).check_size(filename)
 				super(FourierInput, self).set_int_fields('spaceX', args[5])
 				super(FourierInput, self).set_int_fields('spaceY', args[6])
+				check_size(self, filename, int(self.dimensionY/self.spaceY)+1, int(self.dimensionX/self.spaceX)+1)
 				super(FourierInput, self).set_component(args[7])
 				super(FourierInput, self).set_plotType(args[8])
 				self.set_freq(args[9])
@@ -813,8 +786,18 @@ def get_out():
 	return out_path
 # end of get_out
 
+def check_size(UserInput, filename, alongStrike, downDip):
+	"""compare the size of given file and the estimated size"""
+	stat = os.stat(filename)
+	act_size = stat.st_size
+	est_size = alongStrike*downDip*UserInput.simulationTime/UserInput.deltaT*64*3/8
 
+	if act_size != est_size:
+		print "[ERROR]: the size of given file doesn't match given parameters."
+		sys.exit()
+# end of check_size
 
+# ==================TESTING===================
 if __name__ == "__main__":
 	if len(sys.argv) > 1:
 		argument = tuple(sys.argv[1:])

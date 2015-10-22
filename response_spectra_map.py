@@ -9,9 +9,7 @@ import numpy as np
 import sys
 sys.path.insert(0, '/Users/kelicheng/seismtools') # insert the path to seismtools to import stools program.
 from stools import max_osc_response
-# from htools import *
 from htools import plot, saveDat, dis_to_acc, show_progress, loadFile
-# from userInput import *
 from userInput import ResponseInput
 np.seterr(divide='ignore', invalid='ignore')
 
